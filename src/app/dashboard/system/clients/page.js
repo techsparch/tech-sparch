@@ -1,9 +1,13 @@
-import React from 'react'
+"use client"
+import React from "react";
+import ShowAllUser from "@/component/dashboard/system/Pagination";
 
-const page = () => {
+const Systemuser = () => {
   return (
-    <div>page</div>
-  )
-}
+    <div>
+      <ShowAllUser api={"/api/system/getalluser"}></ShowAllUser>
+    </div>
+  );
+};
 
-export default page
+export default Systemuser;

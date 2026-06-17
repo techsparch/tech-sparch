@@ -8,20 +8,12 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       minlength: [3, "Name must be at least 3 characters"],
       maxlength: [50, "Name cannot exceed 50 characters"],
-
-      validate: {
-        validator: function (value) {
-          return /^[A-Za-z]+(?:\s[A-Za-z]+)+$/.test(value);
-        },
-        message: "Please enter full name with at least one space",
-      },
     },
 
     mobile: {
       type: String,
       required: [true, "Mobile number is required"],
-      unique: true,
-      index: true,
+      unique: true, // ✅ index auto-created by unique
       trim: true,
     },
 
@@ -29,12 +21,15 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
+      unique: true, // ✅ no duplicate emails
+      sparse: true, // ✅ allows null/missing
     },
 
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters"],
+      select: false, // ✅ never leaked in queries
     },
 
     role: {
@@ -47,18 +42,14 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    imageUrl: {
+      type: String,
+    },
 
     accessCode: {
       type: String,
       unique: true,
-      sparse: true,
-      index: true,
-    },
-
-    organizationId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      sparse: true, // ✅ allows null/missing
     },
 
     assignedCaId: {
@@ -72,7 +63,6 @@ const UserSchema = new mongoose.Schema(
   },
 );
 
-// optional index
 UserSchema.index({ createdAt: -1 });
 
 const UserModel = mongoose.models.User || mongoose.model("User", UserSchema);

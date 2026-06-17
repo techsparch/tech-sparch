@@ -23,10 +23,13 @@ export async function connectDB() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       dbName: "sp_consultancy",
+      bufferCommands: false, // ✅ fail fast
+    }).catch((error) => {
+      cached.promise = null; // ✅ reset on failure so next call retries
+      throw error;
     });
   }
 
   cached.conn = await cached.promise;
-
   return cached.conn;
 }
