@@ -13,18 +13,20 @@ export function PdfViewer({ open, onOpenChange, fileUrl, fileName }) {
   if (!fileUrl) return null;
 
   const getDownloadUrl = (url, filename) => {
-    // insert fl_attachment after /upload/
-    return url.replace(
-      "/upload/",
-      `/upload/fl_attachment:${filename || "document"}/`,
+    if (!url) return "";
+
+    // 1. Strips the ".pdf" extension if present so Cloudinary doesn't output "file.pdf.pdf"
+    // 2. encodeURIComponent prevents spaces in file names from breaking the HTTP request
+    const safeName = encodeURIComponent(
+      (filename || "document").replace(/\.[^/.]+$/, ""),
     );
+
+    return url.replace("/upload/", `/upload/fl_attachment:${safeName}/`);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* 1. Changed to 'flex flex-col' so the header and PDF share the 90vh 
-        2. Added gap-3 so the PDF doesn't mash into the header text 
-      */}
+      {/* Simplified width logic: 90vw on mobile, exactly 50vw on desktop */}
       <DialogContent className="flex w-[90vw] max-w-3xl sm:w-1/2 sm:max-w-[50vw] h-[90vh] flex-col gap-3 p-4">
         <DialogHeader className="flex flex-row items-center justify-between pr-6 space-y-0">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -34,7 +36,6 @@ export function PdfViewer({ open, onOpenChange, fileUrl, fileName }) {
             </DialogTitle>
           </div>
 
-          {/* Silences the annoying Radix accessibility console warning */}
           <DialogDescription className="sr-only">
             Viewing PDF document: {fileName}
           </DialogDescription>
@@ -51,12 +52,17 @@ export function PdfViewer({ open, onOpenChange, fileUrl, fileName }) {
               <span className="hidden sm:inline">Open in Tab</span>
             </a>
 
+            {/* RE-ADDED: Now powered by your Cloudinary attachment helper */}
+            <a
+              href={getDownloadUrl(fileUrl, fileName)}
+              className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Download</span>
+            </a>
           </div>
         </DialogHeader>
 
-        {/* Using bg-zinc-100 acts as a natural "skeleton loader" 
-          while the browser takes 1.5 seconds to paint the PDF 
-        */}
         <div className="relative flex-1 w-full overflow-hidden rounded-lg border bg-zinc-100 dark:bg-zinc-800">
           <object
             data={fileUrl}
@@ -64,21 +70,33 @@ export function PdfViewer({ open, onOpenChange, fileUrl, fileName }) {
             title={fileName || "PDF Viewer"}
             className="absolute inset-0 h-full w-full"
           >
-            {/* The True Mobile Fallback */}
+            {/* Mobile Fallback View */}
             <div className="flex h-full flex-col items-center justify-center p-6 text-center bg-white">
               <FileText className="h-10 w-10 text-gray-300 mb-2" />
               <p className="text-sm font-medium text-gray-700">
                 Your browser doesn&apos;t support inline PDF previews.
               </p>
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-500"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Open Document
-              </a>
+
+              {/* Added a side-by-side Open/Download choice for mobile users */}
+              <div className="mt-4 flex items-center gap-2.5">
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-500"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Open Document
+                </a>
+
+                <a
+                  href={getDownloadUrl(fileUrl, fileName)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </a>
+              </div>
             </div>
           </object>
         </div>
