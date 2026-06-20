@@ -36,17 +36,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Clients", url: "/dashboard/system/clients", icon: Users },
-  { title: "Documents", url: "/dashboard/documents", icon: FileText },
-  { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
-  { title: "Employees", url: "/dashboard/employees", icon: UserCog },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
-];
-
 /* ── mobile drawer ───────────────────────────────────────────── */
-function MobileNav({ open, onClose, pathname, onProfileClick }) {
+// ✅ FIXED: Added `items` to the props
+function MobileNav({ open, onClose, pathname, onProfileClick, items = [] }) {
   if (!open) return null;
 
   return (
@@ -150,7 +142,8 @@ function ProfileCard({ isCollapsed, onClick }) {
 }
 
 /* ── main ────────────────────────────────────────────────────── */
-export function AppSidebar() {
+// ✅ FIXED: Destructured the props correctly using {}
+export function AppSidebar({ items = [] }) {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -181,6 +174,7 @@ export function AppSidebar() {
         onClose={() => setMobileOpen(false)}
         pathname={pathname}
         onProfileClick={() => setProfileOpen(true)}
+        items={items} // ✅ FIXED: Passed the items array to the drawer
       />
 
       {/* ── DESKTOP SIDEBAR ──────────────────────────────────── */}
@@ -212,14 +206,11 @@ export function AppSidebar() {
                         >
                           <Link
                             href={item.url}
-                            className="
-                         flex items-center gap-4 px-4 py-6
-                           text-[17px] transition-all
-                           text-slate-700 hover:bg-slate-50 border-b 
-  "
+                            className="flex items-center gap-4 px-4 py-6 text-[17px] transition-all text-slate-700 hover:bg-slate-50 border-b"
                           >
                             <item.icon className="h-5 w-5" />
-                            {!isCollapsed && <h1 className="">{item.title}</h1>}
+                            {/* ✅ FIXED: Replaced <h1> with semantic <span> */}
+                            {!isCollapsed && <span className="font-medium">{item.title}</span>}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -247,7 +238,7 @@ export function AppSidebar() {
           <DialogHeader>
             <DialogTitle>Sign out</DialogTitle>
             <DialogDescription>
-              You'll be returned to the login screen. Any unsaved changes will
+              You&apos;ll be returned to the login screen. Any unsaved changes will
               be lost.
             </DialogDescription>
           </DialogHeader>
