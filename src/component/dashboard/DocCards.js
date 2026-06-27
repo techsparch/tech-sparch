@@ -71,7 +71,7 @@ const DocCards = ({
         </div>
       ) : (
         /* POPULATED WHATSAPP CARD GRID */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 items-start">
           {" "}
           {documents.map((doc) => {
             const isPdf = doc.format?.toLowerCase() === "pdf";
@@ -86,7 +86,7 @@ const DocCards = ({
                 key={doc._id}
                 onClick={() => handleOpenPreview(doc)}
                 /* LOCKED HEIGHT: Explicit 370px total card height */
-                className="group  relative flex h-[370px] w-full flex-col justify-between overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer "
+                className="group  relative flex h-[270px] w-full flex-col justify-between overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer "
               >
                 {/* --- TOP: COVER PREVIEW --- */}
 
