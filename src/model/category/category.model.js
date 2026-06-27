@@ -9,7 +9,12 @@ const documentCategorySchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    
+
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DocumentCategory",

@@ -1,6 +1,8 @@
 import { connectDB } from "@/lib/dbconnection/db";
 import DocumentModel from "@/model/doc/doc.model";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "../../auth/[...nextauth]/option";
 
 export async function POST(req) {
   try {
@@ -9,7 +11,6 @@ export async function POST(req) {
     const body = await req.json();
 
     const {
-      clientId,
       categoryId,
       docName,
       fileUrl,
@@ -21,9 +22,17 @@ export async function POST(req) {
       fileName,
     } = body;
 
+    const verifySession = await getServerSession(authOptions);
+
+    if (!verifySession) {
+      return NextResponse.json(
+        { message: "Unauthorized. Invalid session." },
+        { status: 401 },
+      );
+    }
 
     const document = await DocumentModel.create({
-      clientId,
+      clientId: verifySession.user?.id,
       categoryId,
       docName,
       fileUrl,
@@ -34,8 +43,6 @@ export async function POST(req) {
       originalFileName,
       fileName,
     });
-
-    
 
     return NextResponse.json(
       {

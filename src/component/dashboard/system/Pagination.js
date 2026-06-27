@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 
 // 1. Import your new Search component here!
 import SearchUser from "./SearchUser"; // Adjust the path based on where you saved it
+import { useRouter } from "next/navigation";
 
 function getInitials(name) {
   if (!name || typeof name !== "string") return "?";
@@ -49,6 +50,7 @@ const ITEMS_PER_PAGE = 30;
 const ShowAllUser = ({ api }) => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Server-Side Pagination States
   const [currentPage, setCurrentPage] = useState(1);
@@ -173,6 +175,9 @@ const ShowAllUser = ({ api }) => {
             <Card
               key={user._id || user.id}
               className="hover:shadow-md transition-shadow"
+              onClick={() =>
+                router.push(`/dashboard/system/clients/${user._id}`)
+              }
             >
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">

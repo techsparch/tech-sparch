@@ -13,9 +13,9 @@ import {
 
 export default function DashboardLayout({ children }) {
   const items = [
-    { title: "Dashboard", url: "/dashboard/client", icon: LayoutDashboard },
+    { title: "Dashboard", url: "/dashboard/system", icon: LayoutDashboard },
     { title: "Clients", url: "/dashboard/system/clients", icon: Users },
-    { title: "Documents", url: "/dashboard/documents", icon: FileText },
+    { title: "usages", url: "/dashboard/system/usage", icon: FileText },
     { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
     { title: "Employees", url: "/dashboard/employees", icon: UserCog },
     { title: "Settings", url: "/dashboard/settings", icon: Settings },
