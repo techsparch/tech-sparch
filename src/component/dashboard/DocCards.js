@@ -90,6 +90,7 @@ const DocCards = ({
               >
                 {/* --- TOP: COVER PREVIEW --- */}
 
+
                 <div className="relative h-32 w-full bg-[#0d4734] p-3.5 flex flex-col justify-end overflow-hidden">
                   {coverUrl ? (
                     // import Image from 'next/image'; // Ensure this import is at the top of your file
