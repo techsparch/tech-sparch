@@ -36,9 +36,8 @@ const roleIcons = {
   client: User,
 };
 
-const roles = ["system", "ca", "staff", "client"];
 
-export default function CreateAccountDialog({ open, setOpen, onSuccess }) {
+export default function CreateAccountDialog({ open, setOpen, onSuccess , roles}) {
   const [form, setForm] = useState({
     name: "",
     mobile: "",

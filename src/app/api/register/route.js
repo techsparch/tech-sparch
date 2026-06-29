@@ -19,7 +19,7 @@ export async function POST(req) {
 
     const { name, mobile, password, email, role } = await req.json();
 
-    const assignedCaId = verifySession.user?.id;
+    const assignedCaId = verifySession.user.id;
 
     // 🔴 Basic validation
     if (!mobile || !password) {

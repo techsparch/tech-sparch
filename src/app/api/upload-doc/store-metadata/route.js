@@ -11,6 +11,7 @@ export async function POST(req) {
     const body = await req.json();
 
     const {
+      clientId,
       categoryId,
       docName,
       fileUrl,
@@ -32,7 +33,7 @@ export async function POST(req) {
     }
 
     const document = await DocumentModel.create({
-      clientId: verifySession.user?.id,
+      clientId,
       categoryId,
       docName,
       fileUrl,

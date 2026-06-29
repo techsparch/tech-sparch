@@ -38,7 +38,6 @@ export default function CategoryDocumentsPage() {
     window.open(url, "_blank");
   };
 
-
   return (
     <div className="mx-auto max-w-5xl space-y-6 py-4 px-4 sm:px-0">
       {/* Back navigation */}

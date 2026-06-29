@@ -26,7 +26,7 @@ const items = [
   },
   {
     title: "Generate Invoices",
-    url: "/user/invoices",
+    url: "/dashboard/client/invoices",
     icon: Receipt,
   },
   {

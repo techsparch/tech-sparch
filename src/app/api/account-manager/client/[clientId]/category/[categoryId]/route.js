@@ -1,17 +1,31 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import DocumentModel from "@/model/doc/doc.model";
+import { getServerSession } from "next-auth";
+
 import { connectDB } from "@/lib/dbconnection/db";
-import CategoryModel from "@/model/category/category.model";
+import { authOptions } from "@/app/api/auth/[...nextauth]/option";
+
+import UserModel from "@/model/user/user.model";
+import DocumentModel from "@/model/doc/doc.model";
+import CategoryModel from "@/model/category/category.model"
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    const { clientId, categoryId } = await params;
+    const { clientId, categoryId } =await params;
 
-    console.log("api working" , "/src/app/api/system/client/[clientId]/category/[categoryId]/");
-    console.log(categoryId, categoryId);
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== "ca") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
 
     if (
       !mongoose.Types.ObjectId.isValid(clientId) ||
@@ -26,14 +40,28 @@ export async function GET(request, { params }) {
       );
     }
 
+    const client = await UserModel.findOne({
+      _id: clientId,
+      assignedCaId: session.user.id,
+    });
+
+    if (!client) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Client not found or access denied",
+        },
+        { status: 403 },
+      );
+    }
+
     const documents = await DocumentModel.find({
       clientId,
       categoryId,
     })
       .populate("categoryId", "name")
-      .sort({ createdAt: -1 });
-
-    console.log(documents);
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json(
       {

@@ -33,6 +33,8 @@ export default function CategoryPage() {
 
   return (
     <>
+    
+
       <DocCards
         categoryName={categoryName}
         documents={documents}
@@ -40,8 +42,7 @@ export default function CategoryPage() {
         handleOpenPreview={handleOpenPreview}
       />
 
-      <UploadDocComp documents={documents} onUploadSuccess={refetch} />
-
+     
       {/* Re-connected the PDF Lightbox Modal */}
       <PdfViewer
         open={previewOpen}
@@ -49,6 +50,11 @@ export default function CategoryPage() {
         fileUrl={selectedDoc?.fileUrl}
         fileName={selectedDoc?.originalFileName}
       />
+      <div className="relative">
+
+
+       <UploadDocComp documents={documents} onUploadSuccess={refetch} />
+    </div>
     </>
   );
 }

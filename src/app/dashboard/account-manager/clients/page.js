@@ -6,8 +6,8 @@ const Systemuser = () => {
   return (
     <div>
       <ShowAllUser
-        api={"/api/system/getalluser"}
-        apirole={"system"}
+        api={"/api/account-manager/getuser"}
+        apirole={"account-manager"}
       ></ShowAllUser>
     </div>
   );

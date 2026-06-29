@@ -5,20 +5,26 @@ export function useUploadDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ file, categoryId, docName, userId }) => {
+    mutationFn: async ({ file, clientId, categoryId, docName, uploadedBy }) => {
       // 1. Upload the file securely to Cloudinary
       const cloudRes = await uploadToCloudinary(file);
 
-      // 2. Send the resulting metadata to your Next.js API backend
+
+      console.log(categoryId  ," = categoryId", clientId);
+
+      // 2. Store metadata in your database
       const saveRes = await fetch("/api/upload-doc/store-metadata", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
+          clientId,
           categoryId,
           docName: docName || file.name,
           fileUrl: cloudRes.secure_url,
           publicId: cloudRes.public_id,
-          uploadedBy: userId,
+          uploadedBy,
           format: cloudRes.format || "pdf",
           bytes: cloudRes.bytes,
           originalFileName: cloudRes.original_filename,
@@ -32,11 +38,21 @@ export function useUploadDocument() {
         throw new Error(data.message || "Failed to store metadata in database");
       }
 
-      return data.data; // Return the newly created document object
+      return data.data;
     },
-    onSuccess: () => {
-      // Automatically refresh the documents list across your entire app
-      queryClient.invalidateQueries({ queryKey: ["categoryDocuments"] });
+
+    onSuccess: (data, variables) => {
+      console.log("Mutation Success");
+
+      console.log("Invalidating Query:", [
+        "documents",
+        variables.clientId,
+        variables.categoryId,
+      ]);
+
+      queryClient.invalidateQueries({
+        queryKey: ["documents", variables.clientId, variables.categoryId],
+      });
     },
   });
 }

@@ -17,8 +17,9 @@ const DocCards = ({
   const router = useRouter();
 
   return (
-    <div className="mx-auto w-full space-y-6 py-4 px-4 sm:px-0 font-sans gap-3">
+    <div className="mx-auto w-full space-y-4 py-4 px-4 sm:px-0 font-sans gap-3">
       {/* Back navigation */}
+
       <button
         onClick={() => router.back()}
         className="group inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 cursor-pointer"
@@ -51,13 +52,13 @@ const DocCards = ({
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-[370px] w-full rounded-2xl border border-gray-100 bg-gray-100/80 animate-pulse"
+              className="h-[270px] w-full rounded-2xl border border-gray-100 bg-gray-100/80 animate-pulse"
             />
           ))}
         </div>
       ) : documents.length === 0 ? (
         /* EMPTY STATE */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 px-6 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50/50 py-16 px-6 text-center">
           <div className="rounded-full bg-white p-3 shadow-sm border border-gray-100">
             <Inbox className="h-6 w-6 text-gray-400" />
           </div>
@@ -71,8 +72,7 @@ const DocCards = ({
         </div>
       ) : (
         /* POPULATED WHATSAPP CARD GRID */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 items-start">
-          {" "}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-start">
           {documents.map((doc) => {
             const isPdf = doc.format?.toLowerCase() === "pdf";
             const ext = doc.format ? doc.format.toUpperCase() : "FILE";
@@ -85,11 +85,10 @@ const DocCards = ({
               <div
                 key={doc._id}
                 onClick={() => handleOpenPreview(doc)}
-                /* LOCKED HEIGHT: Explicit 370px total card height */
-                className="group  relative flex h-[270px] w-full flex-col justify-between overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer "
+
+                className="group  relative flex h-56 w-full flex-col  overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer "
               >
                 {/* --- TOP: COVER PREVIEW --- */}
-
 
                 <div className="relative h-32 w-full bg-[#0d4734] p-3.5 flex flex-col justify-end overflow-hidden">
                   {coverUrl ? (
@@ -98,7 +97,8 @@ const DocCards = ({
                     <Image
                       src={coverUrl} // Next.js optimizes external URLs via loaders or domain configuration if needed
                       alt="Document Cover"
-                      fill // Replaces h-full w-full absolute, optimized for full container absolute layout
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 33vw"
                       className="object-cover object-top opacity-85 group-hover:scale-105 transition-transform duration-300" // Styling and visual fit classes directly on the component
                     />
                   ) : (
@@ -128,7 +128,7 @@ const DocCards = ({
                     </span>
                   </div>
 
-                  <div className="min-w-0 flex-1 text-left">
+                  <div className="min-w-0 p-2 flex-1 text-left">
                     <p className="truncate text-xs font-semibold text-slate-800 leading-snug">
                       {doc.originalFileName}
                     </p>

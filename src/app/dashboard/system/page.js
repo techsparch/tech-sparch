@@ -65,6 +65,9 @@ export default function SystemDashboardPage() {
     }
   };
 
+  const roles = ["system", "ca", "staff", "client"];
+
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
@@ -198,14 +201,19 @@ export default function SystemDashboardPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{formatDate(u.createdAt)}</Badge>
+                      <Badge variant="secondary">
+                        {formatDate(u.createdAt)}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 // Handle empty state
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                  <TableCell
+                    colSpan={4}
+                    className="h-24 text-center text-slate-500"
+                  >
                     No accounts found.
                   </TableCell>
                 </TableRow>
@@ -219,6 +227,7 @@ export default function SystemDashboardPage() {
         open={open}
         setOpen={setOpen}
         onSuccess={fetchData}
+        roles={roles}
       />
     </div>
   );

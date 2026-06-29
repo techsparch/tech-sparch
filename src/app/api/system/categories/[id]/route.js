@@ -9,8 +9,6 @@ export async function GET(request, { params }) {
 
     const { id } = await params;
 
-    console.log(id );
-
     const categories = await DocumentModel.aggregate([
       {
         $match: {
@@ -43,7 +41,6 @@ export async function GET(request, { params }) {
       },
     ]);
 
-    console.log(categories);
 
     return NextResponse.json({
       success: true,

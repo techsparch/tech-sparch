@@ -1,9 +1,12 @@
-import React from 'react'
+"use client"
+import AccountManagerDashboard from "@/component/dashboard/accountManager/AccountManagerDashboard";
+import React from "react";
 
 const page = () => {
-  return (
-    <div>welcome account-manager</div>
-  )
+  return <>
+
+  <AccountManagerDashboard />
+  </>
 }
 
-export default page
+export default page;

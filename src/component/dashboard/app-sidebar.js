@@ -36,9 +36,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-/* ── mobile drawer ───────────────────────────────────────────── */
-// ✅ FIXED: Added `items` to the props
-function MobileNav({ open, onClose, pathname, onProfileClick, items = [] }) {
+function MobileNav({
+  open,
+  onClose,
+  pathname,
+  onProfileClick,
+  items = [],
+  userName,
+  role,
+}) {
   if (!open) return null;
 
   return (
@@ -53,9 +59,7 @@ function MobileNav({ open, onClose, pathname, onProfileClick, items = [] }) {
       <div className="fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-slate-200 shadow-2xl flex flex-col md:hidden">
         {/* drawer header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <span className="text-lg font-bold text-slate-900">
-            SP Consultancy
-          </span>
+          <span className="text-lg font-bold text-slate-900">tech Sparch</span>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 text-lg leading-none"
@@ -99,14 +103,12 @@ function MobileNav({ open, onClose, pathname, onProfileClick, items = [] }) {
             }}
             className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-100"
           >
-            <div className="h-9 w-9 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold text-sm">
+            <div className="h-12 w-12 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold text-sm">
               SP
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">
-                Sachin Patil
-              </p>
-              <p className="text-xs text-slate-500">Admin</p>
+              <p className="text-sm font-semibold text-slate-900">{userName}</p>
+              <p className="text-xs text-slate-500">{role}</p>
             </div>
             <LogOut className="h-4 w-4 text-slate-400 ml-auto" />
           </div>
@@ -116,8 +118,7 @@ function MobileNav({ open, onClose, pathname, onProfileClick, items = [] }) {
   );
 }
 
-/* ── profile card (desktop) ──────────────────────────────────── */
-function ProfileCard({ isCollapsed, onClick }) {
+function ProfileCard({ isCollapsed, onClick, userName , role }) {
   return (
     <div
       onClick={onClick}
@@ -130,9 +131,9 @@ function ProfileCard({ isCollapsed, onClick }) {
         <>
           <div className="flex flex-col min-w-0 flex-1">
             <p className="text-sm font-semibold text-slate-900 truncate">
-              Sachin Patil
+              {userName}
             </p>
-            <p className="text-xs text-slate-500">Admin</p>
+            <p className="text-xs text-slate-500">{role}</p>
           </div>
           <LogOut className="h-4 w-4 text-slate-400 shrink-0" />
         </>
@@ -141,22 +142,20 @@ function ProfileCard({ isCollapsed, onClick }) {
   );
 }
 
-/* ── main ────────────────────────────────────────────────────── */
-// ✅ FIXED: Destructured the props correctly using {}
-export function AppSidebar({ items = [] }) {
+export function AppSidebar({ items = [], onSignOut, userName, role }) {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  console.log(userName);
+
   return (
     <>
       {/* ── MOBILE TOP BAR ───────────────────────────────────── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shadow-sm">
-        <span className="font-bold text-slate-900 text-base">
-          SP Consultancy
-        </span>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shadow-sm">
+        <span className="font-bold text-slate-900 text-base">Tech Sparch</span>
         <button
           onClick={() => setMobileOpen(true)}
           className="p-2 rounded-md hover:bg-slate-100 transition-colors"
@@ -168,13 +167,14 @@ export function AppSidebar({ items = [] }) {
       {/* SPACER — pushes page content below fixed top bar */}
       <div className="md:hidden h-[52px]" />
 
-      {/* ── MOBILE DRAWER ────────────────────────────────────── */}
       <MobileNav
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         pathname={pathname}
         onProfileClick={() => setProfileOpen(true)}
-        items={items} // ✅ FIXED: Passed the items array to the drawer
+        items={items}
+        userName={userName}
+        role={role}
       />
 
       {/* ── DESKTOP SIDEBAR ──────────────────────────────────── */}
@@ -186,7 +186,7 @@ export function AppSidebar({ items = [] }) {
           <SidebarHeader className="px-5 py-5">
             {!isCollapsed && (
               <div className="text-xl font-bold text-slate-900">
-                SP Consultancy
+                <h1 className="font-bold text-2xl">Tech Sparch</h1>
               </div>
             )}
           </SidebarHeader>
@@ -210,7 +210,9 @@ export function AppSidebar({ items = [] }) {
                           >
                             <item.icon className="h-5 w-5" />
                             {/* ✅ FIXED: Replaced <h1> with semantic <span> */}
-                            {!isCollapsed && <span className="font-medium">{item.title}</span>}
+                            {!isCollapsed && (
+                              <span className="font-medium">{item.title}</span>
+                            )}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -225,6 +227,8 @@ export function AppSidebar({ items = [] }) {
             <ProfileCard
               isCollapsed={isCollapsed}
               onClick={() => setProfileOpen(true)}
+              userName={userName}
+              role={role}
             />
           </SidebarFooter>
 
@@ -238,8 +242,8 @@ export function AppSidebar({ items = [] }) {
           <DialogHeader>
             <DialogTitle>Sign out</DialogTitle>
             <DialogDescription>
-              You&apos;ll be returned to the login screen. Any unsaved changes will
-              be lost.
+              You&apos;ll be returned to the login screen. Any unsaved changes
+              will be lost.
             </DialogDescription>
           </DialogHeader>
 
@@ -248,8 +252,14 @@ export function AppSidebar({ items = [] }) {
               SP
             </div>
             <div>
-              <p className="font-semibold text-sm">Sachin Patil</p>
-              <p className="text-xs text-slate-500">Admin</p>
+              <p className="font-semibold text-sm">{userName}</p>
+              <p className="text-xs text-slate-500">
+                {role === "ca"
+                  ? "account-manager"
+                  : role === "system"
+                    ? "system"
+                    : ""}
+              </p>
             </div>
           </div>
 
@@ -258,6 +268,7 @@ export function AppSidebar({ items = [] }) {
               variant="outline"
               className="flex-1"
               onClick={() => setProfileOpen(false)}
+              size="lg"
             >
               Stay signed in
             </Button>
@@ -265,7 +276,7 @@ export function AppSidebar({ items = [] }) {
               variant="destructive"
               className="flex-1"
               onClick={() => {
-                console.log("logout");
+                onSignOut();
                 setProfileOpen(false);
               }}
             >

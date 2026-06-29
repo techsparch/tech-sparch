@@ -109,3 +109,27 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+
+@media print {
+  @page {
+    /* Setting this to 0 forces the browser to delete its auto-generated headers/footers */
+    margin: 0mm; 
+  }
+
+  body {
+    -webkit-print-color-adjust: exact; /* Bonus: forces background colors to actually print */
+    print-color-adjust: exact;
+  }
+}

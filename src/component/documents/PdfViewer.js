@@ -26,7 +26,6 @@ export function PdfViewer({ open, onOpenChange, fileUrl, fileName }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Simplified width logic: 90vw on mobile, exactly 50vw on desktop */}
       <DialogContent className="flex w-[90vw] max-w-3xl sm:w-1/2 sm:max-w-[50vw] h-[90vh] flex-col gap-3 p-4">
         <DialogHeader className="flex flex-row items-center justify-between pr-6 space-y-0">
           <div className="flex items-center gap-2 overflow-hidden">

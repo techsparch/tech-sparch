@@ -47,7 +47,7 @@ function getInitials(name) {
 
 const ITEMS_PER_PAGE = 30;
 
-const ShowAllUser = ({ api }) => {
+const ShowAllUser = ({ api , apirole  }) => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -80,8 +80,7 @@ const ShowAllUser = ({ api }) => {
         let fetchUrl = `${api}?page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
 
         if (debouncedSearch) {
-          // Pointing to the specific search API route we discussed
-          fetchUrl = `/api/system/searchuser?query=${encodeURIComponent(debouncedSearch)}&page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
+          fetchUrl = `/api/${apirole}/searchuser?query=${encodeURIComponent(debouncedSearch)}&page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
         }
 
         const response = await fetch(fetchUrl, {
@@ -176,7 +175,7 @@ const ShowAllUser = ({ api }) => {
               key={user._id || user.id}
               className="hover:shadow-md transition-shadow"
               onClick={() =>
-                router.push(`/dashboard/system/clients/${user._id}`)
+                router.push(`/dashboard/${apirole}/clients/${user._id}`)
               }
             >
               <CardHeader className="pb-4">
@@ -231,7 +230,7 @@ const ShowAllUser = ({ api }) => {
 
                 <div className="pt-3 border-t mt-3 text-sm text-slate-600 flex items-center justify-between">
                   <span className="font-medium">Assigned CA:</span>
-                  <span className="text-slate-900 capitalize">
+                  <span className="text-slate-900 capitalize wrap-break-word">
                     {user.assignedCaId?.name
                       ? user.assignedCaId.name
                       : "Unassigned"}
