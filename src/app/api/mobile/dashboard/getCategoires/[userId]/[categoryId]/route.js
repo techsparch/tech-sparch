@@ -8,10 +8,12 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    const { clientId, categoryId } = await params;
+    const { userId, categoryId } = await params;
+
+    console.log(userId , categoryId)
 
     if (
-      !mongoose.Types.ObjectId.isValid(clientId) ||
+      !mongoose.Types.ObjectId.isValid(userId) ||
       !mongoose.Types.ObjectId.isValid(categoryId)
     ) {
       return NextResponse.json(
@@ -24,13 +26,11 @@ export async function GET(request, { params }) {
     }
 
     const documents = await DocumentModel.find({
-      clientId,
+    clientId: userId,
       categoryId,
     })
       .populate("categoryId", "name")
       .sort({ createdAt: -1 });
-
-    console.log(documents);
 
     return NextResponse.json(
       {
