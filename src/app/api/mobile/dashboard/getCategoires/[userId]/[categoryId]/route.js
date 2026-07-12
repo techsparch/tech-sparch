@@ -3,14 +3,18 @@ import mongoose from "mongoose";
 import DocumentModel from "@/model/doc/doc.model";
 import { connectDB } from "@/lib/dbconnection/db";
 import CategoryModel from "@/model/category/category.model";
+import { getUser } from "@/helper/auth/auth";
+
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
+    const authUser = getUser(request);
+    if (!authUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     const { userId, categoryId } = await params;
-
-    console.log(userId , categoryId)
 
     if (
       !mongoose.Types.ObjectId.isValid(userId) ||
@@ -26,7 +30,7 @@ export async function GET(request, { params }) {
     }
 
     const documents = await DocumentModel.find({
-    clientId: userId,
+      clientId: userId,
       categoryId,
     })
       .populate("categoryId", "name")

@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-    allowedDevOrigins: ["10.164.35.137"],
-
+  allowedDevOrigins: ["192.168.31.246"],
 
   images: {
     remotePatterns: [
@@ -10,10 +9,6 @@ const nextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
-    ],
-  },
-  images: {
-    remotePatterns: [
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

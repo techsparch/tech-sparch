@@ -3,21 +3,19 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
-// 🔑 Access Token (short)
 export function signAccessToken(user) {
   return jwt.sign(
     { id: user._id, role: user.role },
     JWT_SECRET,
-    { expiresIn: "45m" }
+    { expiresIn: "30d", }
   );
 }
 
-// 🔁 Refresh Token (long)
 export function signRefreshToken(user) {
   return jwt.sign(
     { id: user._id },
     REFRESH_SECRET,
-    { expiresIn: "365d" }
+    { expiresIn: "1y" }
   );
 }
 

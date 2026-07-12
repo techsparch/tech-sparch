@@ -10,7 +10,6 @@ export function useUploadDocument() {
       const cloudRes = await uploadToCloudinary(file);
 
 
-      console.log(categoryId  ," = categoryId", clientId);
 
       // 2. Store metadata in your database
       const saveRes = await fetch("/api/upload-doc/store-metadata", {
