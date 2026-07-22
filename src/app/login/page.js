@@ -33,9 +33,7 @@ const Page = () => {
       const clean = form.mobile.replace(/[^0-9]/g, "").slice(0, 10);
 
       const formatted =
-        clean.length <= 5
-          ? clean
-          : clean.slice(0, 5) + "-" + clean.slice(5);
+        clean.length <= 5 ? clean : clean.slice(0, 5) + "-" + clean.slice(5);
 
       setForm((prev) => ({
         ...prev,
@@ -71,18 +69,33 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50 dark:bg-gray-950">
-      <div className="bg-white dark:bg-gray-900 border rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-dark/70 p-4 sm:p-6">
+      {/* Subtle Background Blobs to match your landing page style */}
+      <div className="absolute -left-48 -top-48 h-96 w-96 rounded-full bg-taupe-500/20 blur-[100px]" />
+      <div className="absolute -bottom-48 -right-48 h-96 w-96 rounded-full bg-light/10 blur-[100px]" />
 
-        <h1 className="text-2xl font-bold text-center mb-6">
-          Secure access to your workspace
-        </h1>
+      <div className="relative z-10 w-full max-w-lg rounded-[2.5rem] bg-light p-8 shadow-2xl sm:p-12">
+        {/* Brand / Logo Area */}
+        <div className="mb-8 text-center">
+          <h1 className="tracking-wider text-lg">techsparch</h1>
+          <p className="text-2xl font-black tracking-tighter text-dark">
+            SAKSHAM{"  "}
+            <span className="text-taupe-500/80 tracking-tighter ">
+              SOLUTIONS
+            </span>
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="mt-2 text-sm text-dark/90">
+            Secure access to your workspace
+          </p>
+        </div>
 
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* MOBILE */}
           <div>
-            <label className="text-sm">Mobile Number</label>
+            <label className="mb-1.5 block text-sm font-semibold text-dark/80">
+              Mobile Number
+            </label>
             <input
               name="mobile"
               type="tel"
@@ -90,49 +103,55 @@ const Page = () => {
               value={form.mobile}
               onChange={handleChange}
               onBlur={handleBlur}
-              placeholder="Enter mobile number"
-              className="w-full mt-1 p-3 rounded-lg border bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter register mobile number"
+              className="w-full rounded-2xl border border-dark/10 bg-light/50 px-4 py-3.5 text-dark transition-all placeholder:text-gray-400 focus:border-taupe-500/ focus:bg-white focus:outline-none focus:ring-4 focus:ring-taupe-500/10"
             />
           </div>
 
           {/* PASSWORD */}
           <div>
-            <label className="text-sm">Password</label>
+            <label className="mb-1.5 block text-sm font-semibold text-dark/80">
+              Password
+            </label>
             <input
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
               placeholder="Enter password"
-              className="w-full mt-1 p-3 rounded-lg border bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-dark/10 bg-light/50 px-4 py-3.5 text-dark transition-all placeholder:text-gray-400 focus:border-taupe-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-taupe-500/10"
             />
           </div>
 
-          {/* BUTTON */}
+          {/* PRIMARY BUTTON */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition"
+            className="mt-4 flex w-full items-center justify-center rounded-full bg-[#061E29] px-8 py-4 text-base font-bold text-white transition-all duration-300 hover:bg-[#0a2a3a] hover:shadow-lg hover:shadow-[#061E29]/20 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Signing in..." : "Login"}
+            {loading ? "Signing in..." : "Secure Login"}
           </button>
         </form>
 
-        {/* EXTRA */}
-        <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-          <span className="px-3 text-xs text-gray-500">OR</span>
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+        {/* DIVIDER */}
+        <div className="my-8 flex items-center">
+          <div className="h-px flex-1 bg-dark/10"></div>
+          <span className="px-4 text-xs font-semibold tracking-wider text-dark/40">
+            OR
+          </span>
+          <div className="h-px flex-1 bg-dark/10"></div>
         </div>
 
+        {/* SECONDARY BUTTON */}
         <button
           onClick={() => router.push("/login/access-login")}
-          className="w-full border py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="flex w-full items-center justify-center rounded-full border border-dark/10 bg-transparent px-8 py-4 text-base font-bold text-dark transition-all duration-300 hover:bg-dark/5"
         >
           Login with Access Code
         </button>
 
-        <p className="text-xs text-center text-gray-500 mt-6">
+        {/* FOOTER */}
+        <p className="mt-8 text-center text-xs font-medium text-dark/40">
           Secure access • Smart permissions • CA workflow system
         </p>
       </div>

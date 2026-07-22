@@ -6,11 +6,18 @@ import SubscriptionModel from "@/model/payment/subscription.model";
 
 export async function POST(req) {
   try {
+    // Visual separator to make spotting webhook hits easy in the terminal
+    console.log("\n==========================================");
+    console.log("🔔 [WEBHOOK] Request Received!");
+
     // 1. Read raw body as text for webhook signature validation
     const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
 
+    console.log(`🔑 [WEBHOOK] Signature from headers: ${signature ? "Present" : "Missing"}`);
+
     if (!signature) {
+      console.error("❌ [WEBHOOK] Error: Missing Razorpay signature.");
       return NextResponse.json(
         { message: "Missing Razorpay signature" },
         { status: 400 },
@@ -24,11 +31,14 @@ export async function POST(req) {
       .digest("hex");
 
     if (expectedSignature !== signature) {
+      console.error("❌ [WEBHOOK] Error: Signature mismatch! Expected:", expectedSignature);
       return NextResponse.json(
         { message: "Invalid webhook signature" },
         { status: 400 },
       );
     }
+
+    console.log("✅ [WEBHOOK] Signature verified successfully.");
 
     // 3. Parse event data
     const event = JSON.parse(rawBody);
@@ -38,12 +48,18 @@ export async function POST(req) {
     const payloadEntity = event.payload.subscription.entity;
     const razorpaySubscriptionId = payloadEntity.id;
 
+    // Log the parsed data to verify correctness
+    console.log(`📦 [WEBHOOK] Event Type: ${eventType}`);
+    console.log(`💳 [WEBHOOK] Razorpay Sub ID: ${razorpaySubscriptionId}`);
+    console.log("📄 [WEBHOOK] Payload Data:", JSON.stringify(payloadEntity, null, 2));
+
     // Find local subscription
     const subscription = await SubscriptionModel.findOne({
       razorpaySubscriptionId,
     });
 
     if (!subscription) {
+      console.warn(`⚠️ [WEBHOOK] Subscription not found locally for ID: ${razorpaySubscriptionId}`);
       // Return 200 to Razorpay so it doesn't repeatedly retry an unknown local ID
       return NextResponse.json(
         { received: true, message: "Subscription not found locally" },
@@ -51,11 +67,14 @@ export async function POST(req) {
       );
     }
 
+    console.log(`✅ [WEBHOOK] Local subscription found. Current Status: ${subscription.status}`);
+
     // 4. Handle Lifecycle Events
     switch (eventType) {
       case "subscription.authenticated":
         subscription.status = "authenticated";
         await subscription.save();
+        console.log("💾 [WEBHOOK] DB Updated: Status set to 'authenticated'");
         break;
 
       case "subscription.activated":
@@ -74,6 +93,7 @@ export async function POST(req) {
         subscription.nextRenewalAt = new Date(payloadEntity.charge_at * 1000);
         subscription.gracePeriodEndsAt = null; // Clear any existing grace period
         await subscription.save();
+        console.log(`💾 [WEBHOOK] DB Updated: Status set to 'active' for event '${eventType}'`);
         break;
       }
 
@@ -87,6 +107,7 @@ export async function POST(req) {
         subscription.gracePeriodEndsAt = graceEnd;
         // Services remain enabled during grace period
         await subscription.save();
+        console.log(`💾 [WEBHOOK] DB Updated: Status set to 'grace_period' for event '${eventType}'`);
         break;
       }
 
@@ -95,6 +116,7 @@ export async function POST(req) {
         subscription.status = "expired";
         subscription.serviceEnabled = false;
         await subscription.save();
+        console.log("💾 [WEBHOOK] DB Updated: Status set to 'expired'");
         break;
       }
 
@@ -103,19 +125,23 @@ export async function POST(req) {
         subscription.serviceEnabled = false;
         subscription.cancelledAt = new Date();
         await subscription.save();
+        console.log("💾 [WEBHOOK] DB Updated: Status set to 'cancelled'");
         break;
       }
 
       default:
-        console.log(`Unhandled Razorpay webhook event: ${eventType}`);
+        console.log(`❓ [WEBHOOK] Unhandled Razorpay webhook event: ${eventType}`);
     }
+
+    console.log("✅ [WEBHOOK] Processing Complete.");
+    console.log("==========================================\n");
 
     return NextResponse.json(
       { success: true, received: true },
       { status: 200 },
     );
   } catch (error) {
-    console.error("Webhook Error:", error);
+    console.error("❌ [WEBHOOK] Critical Error:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 },
