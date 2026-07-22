@@ -4,18 +4,19 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 
 import { PdfViewer } from "@/component/documents/PdfViewer";
-import { useDocuments } from "@/hooks/system/getdocs";
 import DocCards from "@/component/dashboard/DocCards";
 import UploadDocComp from "@/component/documents/UploadDocComp";
+import { useDocumentsForAccountManager } from "@/hooks/account-manager/getdocs";
 
 export default function CategoryPage() {
   const { id, categoryId } = useParams();
 
   // Fetch documents for this category
-  const { data: documents = [], isLoading: loading , refetch, } = useDocuments(
-    id,
-    categoryId,
-  );
+  const {
+    data: documents = [],
+    isLoading: loading,
+    refetch,
+  } = useDocumentsForAccountManager(id, categoryId);
 
   // Modal state management
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -33,8 +34,6 @@ export default function CategoryPage() {
 
   return (
     <>
-    
-
       <DocCards
         categoryName={categoryName}
         documents={documents}
@@ -42,7 +41,6 @@ export default function CategoryPage() {
         handleOpenPreview={handleOpenPreview}
       />
 
-     
       {/* Re-connected the PDF Lightbox Modal */}
       <PdfViewer
         open={previewOpen}
@@ -51,10 +49,8 @@ export default function CategoryPage() {
         fileName={selectedDoc?.originalFileName}
       />
       <div className="relative">
-
-
-       <UploadDocComp documents={documents} onUploadSuccess={refetch} />
-    </div>
+        <UploadDocComp documents={documents} onUploadSuccess={refetch} />
+      </div>
     </>
   );
 }

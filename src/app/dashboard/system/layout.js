@@ -54,7 +54,6 @@ export default function DashboardLayout({ children }) {
       signOut({ callbackUrl: "/login" });
     };
   
-    console.log(session);
   
   return (
     <TooltipProvider>

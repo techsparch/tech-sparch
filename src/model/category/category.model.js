@@ -5,9 +5,7 @@ const documentCategorySchema = new mongoose.Schema(
     categoryName: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
-      index: true,
     },
 
     clientId: {
@@ -41,6 +39,8 @@ const documentCategorySchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+documentCategorySchema.index({ clientId: 1, categoryName: 1 }, { unique: true });
 
 const CategoryModel =
   mongoose.models.DocumentCategory ||

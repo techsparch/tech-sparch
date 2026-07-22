@@ -25,10 +25,10 @@ const UploadDocComp = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
 
   const { data: session } = useSession();
+  const param = useParams();
   const { id, categoryId } = useParams();
   const fileInputRef = useRef(null);
 
-  // 3. Initialize the QueryClient
   const { mutate, isPending } = useUploadDocument();
 
   const isFormValid = Boolean(file) && !isPending;

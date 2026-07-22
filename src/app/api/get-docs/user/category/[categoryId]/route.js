@@ -26,8 +26,7 @@ export async function GET(req, context) {
       );
     }
 
-    console.log(categoryId, session.user.id);
-
+    
     const documents = await DocumentModel.find({
       clientId: session.user.id,
       categoryId,

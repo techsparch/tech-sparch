@@ -3,12 +3,26 @@ import mongoose from "mongoose";
 import DocumentModel from "@/model/doc/doc.model";
 import { connectDB } from "@/lib/dbconnection/db";
 import CategoryModel from "@/model/category/category.model";
+import { authOptions } from "@/app/api/auth/[...nextauth]/option";
+import { getServerSession } from "next-auth";
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
 
     const { clientId, categoryId } = await params;
+
+    const session = await getServerSession(authOptions);
+
+    if (!session.user.id || session.user.role !== "system") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
 
     if (
       !mongoose.Types.ObjectId.isValid(clientId) ||
@@ -28,9 +42,8 @@ export async function GET(request, { params }) {
       categoryId,
     })
       .populate("categoryId", "name")
-      .sort({ createdAt: -1 });
-
-    console.log(documents);
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json(
       {

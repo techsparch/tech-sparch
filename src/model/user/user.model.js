@@ -53,12 +53,17 @@ const UserSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true, // ✅ allows null/missing
+      select: false,
     },
 
     assignedCaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+    },
+
+    hasFullAccess: {
+      type: Boolean,
     },
 
     shopName: {
@@ -77,6 +82,8 @@ const UserSchema = new mongoose.Schema(
           "Private Limited",
           "LLP",
           "Other",
+          "trust",
+          "Public",
           "",
         ],
         message: "{VALUE} is not a valid business type",

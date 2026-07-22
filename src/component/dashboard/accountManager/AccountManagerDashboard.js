@@ -14,6 +14,7 @@ import { Badge, Briefcase, ShieldCheck, UserPlus, Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CreateAccountDialog from "../system/CreateAccountDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AccountManagerDashboard = () => {
   const {
@@ -26,6 +27,7 @@ const AccountManagerDashboard = () => {
     isLoading,
     refetch,
   } = useAccountManagerDashboard();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (error) {
@@ -47,7 +49,14 @@ const AccountManagerDashboard = () => {
     });
   }
 
-  console.log(data.data);
+  const handleAccountCreated = () => {
+    // Refresh the dashboard's own data
+    refetch();
+
+    // Wipe the cached staff list so the Staff page fetches fresh data!
+    // NOTE: Make sure "staff" matches the exact queryKey used in your useGetStaffForAccountManager hook.
+    queryClient.invalidateQueries({ queryKey: ["staff"] });
+  };
 
   const roles = ["ca", "staff", "client"];
 
@@ -174,7 +183,7 @@ const AccountManagerDashboard = () => {
       <CreateAccountDialog
         open={open}
         setOpen={setOpen}
-        onSuccess={refetch}
+        onSuccess={handleAccountCreated}
         roles={roles}
       />
     </div>

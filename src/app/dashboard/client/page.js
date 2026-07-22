@@ -1,22 +1,22 @@
 "use client";
 
-import { uploadToCloudinary } from "@/helper/utils/cloudinaryUpload";
-import { useEffect, useState, useRef } from "react";
+import { useDocuments } from "@/hooks/client/getCategoriesForClient";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  CheckCircle2,
-  FileText,
+  ChevronLeft,
+  ChevronRight,
   Folder,
+  Inbox,
   Loader2,
-  Upload,
   Plus,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
-// Shadcn UI Imports
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+// ✅ FIXED: Imported Dialog from your local UI folder
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -24,342 +24,109 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useCategories } from "@/hooks/useCategories";
+
+// ✅ FIXED: Imported Label from your local UI folder (assuming you have one, or just use HTML label)
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-export default function UploadDocument() {
-  const [refreshTick, setRefreshTick] = useState(0);
+const ShowCategories = () => {
+  const router = useRouter();
 
-  return (
-    <div className="mx-auto max-w-5xl space-y-8 py-8 px-4 sm:px-6">
-      {/* Top Header Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Document Vault
-          </h1>
-          <p className="text-sm text-slate-500">
-            Select a category below to view files, or attach new records.
-          </p>
-        </div>
-
-        {/* Upload Modal Trigger */}
-        <UploadDocDialog
-          onUploadSuccess={() => setRefreshTick((prev) => prev + 1)}
-        />
-      </div>
-
-      {/* Embedded Document Categories Grid */}
-      <DocumentsPage refreshTrigger={refreshTick} />
-    </div>
-  );
-}
-
-// ==========================================
-// 1. THE SHADCN UPLOAD DIALOG MODAL
-// ==========================================
-
-function UploadDocDialog({ onUploadSuccess }) {
+  const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [selectedDocName, setSelectedDocName] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // DELETED: const [successMsg, setSuccessMsg] = useState(false);
-
-  const fileInputRef = useRef(null);
   const { data: session, status } = useSession();
+  const id = session?.user?.id;
+  // ✅ FIXED: Extracted refetch from the hook
+  const { data, isLoading, isError, error, refetch } = useDocuments(page);
 
-  const clientId = session?.user.id;
+  const totalCategories = data?.pagination?.total || 0;
+  const totalPages = data?.pagination?.totalPages || 1;
 
-  const { data: categories = [], isLoading: categoriesLoading } =
-    useCategories();
-
-  const activeCategory =
-    categories.find((cat) => cat._id === selectedCategoryId) || null;
-  const availableSubDocs = activeCategory ? activeCategory.docNames || [] : [];
-
-  const handleCategorySwitch = (value) => {
-    setSelectedCategoryId(value);
-    setSelectedDocName("");
+  const handleOpenCategory = (categoryId) => {
+    router.push(`/dashboard/client/${categoryId}/${id}`);
   };
 
-  const handleUpload = async () => {
-    if (!file || !selectedCategoryId || !selectedDocName) return;
-    setLoading(true);
+  const handleSubmit = async () => {
+    if (!categoryName.trim()) return;
+    setIsSubmitting(true);
+
+    const payload = {
+      categoryName: categoryName.trim(),
+    };
 
     try {
-      const cloudRes = await uploadToCloudinary(file);
-
-      const saveRes = await fetch("/api/upload-doc/store-metadata", {
+      const response = await fetch(`/api/client/getCategories`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId,
-          categoryId: selectedCategoryId,
-          docName: selectedDocName,
-          fileUrl: cloudRes.secure_url,
-          publicId: cloudRes.public_id,
-          uploadedBy: clientId,
-          format: cloudRes.format || "pdf",
-          bytes: cloudRes.bytes,
-          originalFileName: cloudRes.original_filename,
-          fileName: cloudRes.display_name || file.name,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      if (!saveRes.ok) throw new Error("Failed to store metadata in database");
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(
+          "Oops, the server returned an HTML page instead of JSON. Check your API route URL.",
+        );
+      }
 
-      // 2. Fire the toast instantly
-      toast.success("File encrypted and stored inside vault!");
+      const result = await response.json();
 
-      if (onUploadSuccess) onUploadSuccess();
+      if (!response.ok) {
+        toast.error(result.message || "Failed to create category");
+        setIsSubmitting(false);
+        return;
+      }
 
-      // 3. Instantly wipe form & snap the modal shut (No setTimeout required)
-      setFile(null);
-      setSelectedCategoryId("");
-      setSelectedDocName("");
+      setCategoryName("");
       setOpen(false);
-    } catch (err) {
-      console.error("UPLOAD ERROR:", err.message);
-      // 4. BONUS: Upgraded your ugly browser alert() to a Toast error
-      toast.error(`Upload failed: ${err.message}`);
+
+      // ✅ Now this will work properly!
+      await refetch();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Something went wrong.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const isFormValid = selectedCategoryId && selectedDocName && file && !loading;
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 bg-sky-900 hover:bg-sky-400 text-white font-semibold rounded-xl shadow-sm transition-all active:scale-[0.98]">
-          <Plus className="h-4 w-4" />
-          Upload Document
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent
-        className="w-[95vw] sm:w-[460px] max-w-none p-0 overflow-hidden rounded-2xl border bg-white shadow-2xl"
-        onPointerDownOutside={(e) => {
-          const isAnyDropdownOpen = document.querySelector('[role="listbox"]');
-          if (isAnyDropdownOpen) {
-            e.preventDefault();
-          }
-        }}
-      >
-        {/* HEADER */}
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/75">
-          <DialogHeader className="text-left space-y-1">
-            <DialogTitle className="text-base font-bold text-slate-900">
-              File Client Record
-            </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Categorize and securely encrypt paperwork into the client vault.
-            </DialogDescription>
-          </DialogHeader>
-        </div>
-
-        {/* BODY */}
-        <div className="px-6 py-5 space-y-5 max-h-[75vh] overflow-y-auto text-left">
-          {/* STEP 1 */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-              <span className="h-4 w-4 text-[10px] font-bold flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                1
-              </span>
-              Attach Verified Record
-            </label>
-
-            <div
-              onClick={() => !loading && fileInputRef.current?.click()}
-              className={`min-h-[130px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-4 transition-all cursor-pointer ${
-                file
-                  ? "bg-blue-50/30 border-blue-300 hover:bg-blue-50/50"
-                  : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-300"
-              }`}
-            >
-              {!file ? (
-                <div className="text-center space-y-1.5 p-2">
-                  <div className="rounded-full bg-white p-2 shadow-2xs border border-slate-100 w-fit mx-auto mb-1">
-                    <Upload className="h-4 w-4 text-slate-500" />
-                  </div>
-                  <p className="text-xs font-semibold text-slate-700">
-                    Click to browse from device
-                  </p>
-                  <p className="text-[10px] font-medium text-slate-400">
-                    PDF, JPG, PNG (Max 10MB)
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2 w-full max-w-[320px]">
-                  <div className="flex items-center gap-3 bg-white border border-blue-100 rounded-xl px-3.5 py-2.5 shadow-xs w-full">
-                    <FileText className="h-5 w-5 text-blue-600 shrink-0" />
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="text-xs font-semibold text-slate-800 truncate">
-                        {file.name}
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-400">
-                        {(file.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-blue-600 hover:underline">
-                    Click to replace file
-                  </span>
-                </div>
-              )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={(e) => {
-                  const dropped = e.target.files?.[0] ?? null;
-                  setFile(dropped);
-                }}
-                disabled={loading}
-                className="hidden"
-                accept=".pdf,image/*"
-              />
-            </div>
-          </div>
-
-          {/* STEP 2 & 3 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-0.5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <span className="h-4 w-4 text-[10px] font-bold flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                  2
-                </span>
-                Master Vault
-              </label>
-
-              <Select
-                value={selectedCategoryId}
-                onValueChange={handleCategorySwitch}
-                disabled={loading}
-              >
-                <SelectTrigger className="h-10 rounded-xl text-sm border-slate-200 focus:ring-2 focus:ring-blue-500/20">
-                  <SelectValue placeholder="Select vault..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem
-                      key={cat._id}
-                      value={cat._id}
-                      className="text-sm font-medium"
-                    >
-                      {cat.categoryName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                <span className="h-4 w-4 text-[10px] font-bold flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                  3
-                </span>
-                Document Type
-              </label>
-
-              <Select
-                value={selectedDocName}
-                onValueChange={setSelectedDocName}
-                disabled={!selectedCategoryId || loading}
-              >
-                <SelectTrigger className="h-10 rounded-xl text-sm border-slate-200 focus:ring-2 focus:ring-blue-500/20 data-[disabled]:opacity-50">
-                  <SelectValue
-                    placeholder={
-                      selectedCategoryId
-                        ? "Select paperwork..."
-                        : "Pick a vault first"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSubDocs.map((doc, idx) => (
-                    <SelectItem
-                      key={idx}
-                      value={doc}
-                      className="text-sm font-medium"
-                    >
-                      {doc}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* DELETED: Inline successMsg JSX block */}
-        </div>
-
-        {/* FOOTER */}
-        <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-2.5">
-          <DialogClose asChild>
-            <Button
-              variant="outline"
-              disabled={loading}
-              className="h-9 text-xs font-semibold rounded-xl border-slate-200"
-            >
-              Cancel
-            </Button>
-          </DialogClose>
-
-          <Button
-            onClick={handleUpload}
-            disabled={!isFormValid}
-            className="h-9 px-5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all active:scale-[0.98]"
-          >
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
-            {loading ? "Saving to Vault..." : "Submit"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ==========================================
-// 2. THE CATEGORIES FOLDER VIEW
-// ==========================================
-export function DocumentsPage({ refreshTrigger }) {
-  const router = useRouter();
-
-  const { data: categories = [], isLoading: loading, error } = useCategories();
-  if (loading)
+  if (isLoading) {
     return (
-      <div className="p-8 text-sm text-slate-500">
-        Loading vault categories...
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="animate-spin text-orange-600 w-8 h-8" />
       </div>
     );
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="text-red-500 text-center p-4">
+        {error?.message || "Failed to load categories."}
+      </div>
+    );
+  }
+
+  const categories = data?.categories || [];
 
   return (
     <div className="space-y-6">
-      <div className="">
+      <div>
         <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
           Vault Categories
         </h2>
       </div>
 
+      {/* Folders Grid */}
       <div className="flex flex-wrap gap-x-8 gap-y-10">
         {categories.map((category) => (
           <div
             key={category._id}
-            onClick={() => router.push(`/dashboard/client/${category._id}`)}
+            onClick={() => handleOpenCategory(category._id)}
             className="flex flex-col items-center justify-start cursor-pointer w-28 group"
           >
             <Folder
@@ -376,12 +143,93 @@ export function DocumentsPage({ refreshTrigger }) {
         ))}
 
         {categories.length === 0 && (
-          <div className="text-sm text-slate-500">
-            No documents uploaded yet.
+          <div className="flex flex-col w-full items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 px-6 text-center">
+            <div className="rounded-full bg-white p-3 shadow-sm border border-gray-100">
+              <Inbox className="h-6 w-6 text-gray-400" />
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-gray-900">
+              No documents found
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 max-w-sm">
+              There are no documents filed under this category yet. Upload one
+              to get started.
+            </p>
           </div>
         )}
-        <div className="border-b border-slate-200 pb-2"></div>
+      </div>
+
+      {totalCategories > 30 && (
+        <div className="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">
+          <p className="text-sm text-slate-500">
+            Showing page {page} of {totalPages}
+          </p>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((old) => Math.max(old - 1, 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((old) => Math.min(old + 1, totalPages))}
+              disabled={page >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED POSITION FLOATING ACTION BUTTON */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button
+              size="icon"
+              className="h-14 w-14 rounded-full shadow-xl hover:shadow-2xl transition-all"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Category</DialogTitle>
+              <DialogDescription>
+                Create a new document category for this client.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-2 py-4">
+              {/* Ensure htmlFor and id match exactly */}
+              <Label htmlFor="categoryName">Category Name</Label>
+              <Input
+                id="categoryName"
+                placeholder="e.g. GST Returns"
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Category"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
-}
+};
+
+export default ShowCategories;

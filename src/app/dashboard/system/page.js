@@ -68,6 +68,16 @@ export default function SystemDashboardPage() {
   const roles = ["system", "ca", "staff", "client"];
 
 
+  const handleAccountCreated = () => {
+    // Refresh the dashboard's own data
+    refetch(); 
+    
+    // Wipe the cached staff list so the Staff page fetches fresh data!
+    // NOTE: Make sure "staff" matches the exact queryKey used in your useGetStaffForAccountManager hook.
+    queryClient.invalidateQueries({ queryKey: ["staff"] }); 
+  };
+
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();

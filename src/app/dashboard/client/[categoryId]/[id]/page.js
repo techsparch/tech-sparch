@@ -23,7 +23,11 @@ export default function CategoryDocumentsPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
 
-  const { data, isLoading: loading } = useCategoryDocuments(categoryId);
+  const {
+    data,
+    isLoading: loading,
+    refetch,
+  } = useCategoryDocuments(categoryId);
 
   const documents = data?.documents ?? [];
   const categoryName = data?.categoryName ?? "";
@@ -174,11 +178,11 @@ export default function CategoryDocumentsPage() {
               </div>
             );
           })}
-          <UploadDocComp documents={documents} />
         </div>
       )}
 
       {/* Put your Upload trigger at the bottom inside its own flex row */}
+      <UploadDocComp documents={documents} onUploadSuccess={refetch} />
 
       <PdfViewer
         open={previewOpen}

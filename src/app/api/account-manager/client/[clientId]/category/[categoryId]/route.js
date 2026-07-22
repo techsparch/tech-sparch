@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
     const { clientId, categoryId } =await params;
 
     const session = await getServerSession(authOptions);
-
+    
     if (!session || session.user.role !== "ca") {
       return NextResponse.json(
         {
