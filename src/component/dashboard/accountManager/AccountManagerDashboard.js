@@ -61,9 +61,11 @@ const AccountManagerDashboard = () => {
   const roles = ["ca", "staff", "client"];
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-light min-h-screen">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight antialiased">
+          Dashboard
+        </h1>
         <p className="text-sm text-slate-500">
           Manage firm accounts, data and access control
         </p>
@@ -73,7 +75,7 @@ const AccountManagerDashboard = () => {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Total Users</p>
+              <p className="text-md text-dark tracking-tight">Total Users</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -87,7 +89,7 @@ const AccountManagerDashboard = () => {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Active Users</p>
+              <p className="text-md text-dark tracking-tight">Active Users</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -100,7 +102,7 @@ const AccountManagerDashboard = () => {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Staff</p>
+              <p className="text-md text-dark tracking-tight">Staff</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (

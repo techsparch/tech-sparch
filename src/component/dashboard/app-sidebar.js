@@ -118,7 +118,7 @@ function MobileNav({
   );
 }
 
-function ProfileCard({ isCollapsed, onClick, userName , role }) {
+function ProfileCard({ isCollapsed, onClick, userName, role }) {
   return (
     <div
       onClick={onClick}

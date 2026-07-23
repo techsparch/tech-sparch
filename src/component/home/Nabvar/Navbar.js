@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,12 +5,14 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Menu, X, ArrowDown } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar(pathname) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showTrigger, setShowTrigger] = useState(false);
   const { data: session, status } = useSession();
+
+  console.log(pathname.path, "pathmane");
 
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -63,7 +64,7 @@ export default function Navbar() {
 
   return (
     <>
-   <header
+      <header
         className={`fixed left-0 top-0 z-50 w-full px-3 pt-4 sm:px-4 sm:pt-6 lg:px-6 transition-all duration-500 ${
           isVisible
             ? "translate-y-0 opacity-100"
@@ -97,16 +98,18 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/about"
-                  className="rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-dark/80 transition-all duration-300 hover:bg-dark/10 hover:text-dark"
+                  className={`rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-dark/80 transition-all duration-300 hover:bg-dark/10 hover:text-dark ${pathname.path === "/about" ? "underline underline-offset-4" : ""}`}
                 >
                   About
                 </Link>
+
                 <Link
                   href="/services"
-                  className="rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-dark/80 transition-all duration-300 hover:bg-dark/10 hover:text-dark"
+                  className={`rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-dark/80 transition-all duration-300 hover:bg-dark/10 hover:text-dark ${pathname.path === "/services" ? "underline underline-offset-4" : ""}`}
                 >
                   Services
                 </Link>
+
                 <Link
                   href="/contact"
                   className="rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-dark/80 transition-all duration-300 hover:bg-dark/10 hover:text-dark"
@@ -222,7 +225,6 @@ export default function Navbar() {
           </div>
         )}
       </header>
-
 
       {/* Floating "show nav" button — fixed bottom-right, simple toggle */}
       <button

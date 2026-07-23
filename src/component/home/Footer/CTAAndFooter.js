@@ -160,6 +160,11 @@ export default function CTAAndFooter() {
               reserved.
             </p>
           </div>
+
+          <p className="text-sm text-dark/50 flex items-center gap-1">
+            Designed & Developed in 🇮🇳 India with{" "}
+            <span className="text-red-500">❤️</span>.
+          </p>
         </div>
       </footer>
     </>

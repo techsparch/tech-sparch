@@ -24,30 +24,28 @@ const items = [
     url: "/dashboard/client",
     icon: LayoutDashboard,
   },
+
   {
-    title: "Tasks",
-    url: "/user/tasks",
-    icon: CheckSquare,
-  },
-  {
-    title: "Generate Invoices",
+    title: "Invoices",
     url: "/dashboard/client/invoices",
     icon: Receipt,
   },
-  {
-    title: "Payments",
-    url: "/user/payments",
-    icon: CreditCard,
-  },
+
   {
     title: "Profile",
-    url: "/user/profile",
+    url: "/dashboard/client/profile",
     icon: User,
   },
   {
     title: "Support",
     url: "/user/support",
     icon: Headset,
+  },
+
+  {
+    title: "Payments",
+    url: "/user/payments",
+    icon: CreditCard,
   },
   {
     title: "Settings",

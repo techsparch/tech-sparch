@@ -87,11 +87,11 @@ export default function SystemDashboardPage() {
     roleCounts.find((r) => r._id === role)?.count ?? 0;
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-light/50 min-h-screen">
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">System Dashboard</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-bold tracking-tight text-dark">System Dashboard</h1>
+        <p className="text-sm text-dark">
           Manage CA firm accounts, roles and access control
         </p>
       </div>
@@ -101,7 +101,7 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Total Accounts</p>
+              <p className="text-md text-dark tracking-tight ">Total Accounts</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -115,7 +115,7 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Active Users</p>
+              <p className="text-md text-dark tracking-tight">Active Users</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -129,7 +129,7 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">CA Accounts</p>
+              <p className="text-md text-dark tracking-tight">CA Accounts</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -143,7 +143,7 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500">Client Accounts</p>
+              <p className="text-md text-dark tracking-tight">Client Accounts</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -160,11 +160,11 @@ export default function SystemDashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Active Accounts</CardTitle>
-            <p className="text-sm text-slate-500">
+            <p className="text-md tracking-tight text-dark">
               Staff, CA and Client accounts
             </p>
           </div>
-          <Button onClick={() => setOpen(true)}>+ Create Account</Button>
+          <Button className="bg-dark text-light tracking-tight" onClick={() => setOpen(true)}>+ Create Account</Button>
         </CardHeader>
 
         <CardContent>

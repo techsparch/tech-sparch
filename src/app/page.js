@@ -5,6 +5,7 @@ import FeaturesSection from "@/component/home/Features/FeaturesSection";
 import CTAAndFooter from "@/component/home/Footer/CTAAndFooter";
 import Hero from "@/component/home/hero/hero";
 import Navbar from "@/component/home/Nabvar/Navbar";
+import PricingSection from "@/component/home/Pricing/PricingSection";
 import HowItWorksSection from "@/component/home/Works/HowItWorksSection";
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
       <Hero />
       <FeaturesSection />
       <HowItWorksSection />
+      {/* <PricingSection /> */}
 
       {/* <AlternatingFeatures/> */}
       {/* Second Section for Scroll Testing */}

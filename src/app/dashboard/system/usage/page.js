@@ -3,19 +3,9 @@ import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const API_URL = "/api/system/cloud-uses";
-
 const RADIAN = Math.PI / 180;
 
-function CustomLabel({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-  name,
-  value,
-}) {
+function CustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
   if (percent < 0.02) return null;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -24,11 +14,9 @@ function CustomLabel({
     <text
       x={x}
       y={y}
-      fill="black"
       textAnchor="middle"
       dominantBaseline="central"
-      fontSize={11}
-      fontWeight={600}
+      className="fill-black text-[11px] font-semibold"
     >
       {`${(percent * 100).toFixed(1)}%`}
     </text>
@@ -41,94 +29,45 @@ function CustomTooltip({ active, payload }) {
   const total = payload[0].payload.total;
   const pct = ((value / total) * 100).toFixed(2);
   return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid #e2e8f0",
-        borderRadius: 8,
-        padding: "10px 14px",
-        fontSize: 13,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-      }}
-    >
-      <p style={{ margin: 0, fontWeight: 600, color: "#1e293b" }}>{name}</p>
-      <p style={{ margin: "4px 0 0", color: "#64748b" }}>
-        {value.toFixed(2)} GB
-      </p>
-      <p style={{ margin: "2px 0 0", color: "#94a3b8", fontSize: 12 }}>
-        {pct}% of total
-      </p>
+    <div className="bg-white border border-slate-200 rounded-lg py-2.5 px-3.5 text-[13px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+      <p className="m-0 font-semibold text-slate-800">{name}</p>
+      <p className="mt-1 text-slate-500">{value.toFixed(2)} GB</p>
+      <p className="mt-0.5 text-[12px] text-slate-400">{pct}% of total</p>
     </div>
   );
 }
 
 function MetricCard({ label, value, sub, accent }) {
   return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid #f1f5f9",
-        borderRadius: 12,
-        padding: "16px 20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-      }}
-    >
-      <span
-        style={{
-          fontSize: 12,
-          color: "#94a3b8",
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-        }}
-      >
+    <div className="bg-white border border-slate-100 rounded-xl py-4 px-5 flex flex-col gap-1">
+      <span className="text-[12px] text-slate-400 font-medium uppercase tracking-[0.06em]">
         {label}
       </span>
       <span
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: accent || "#1e293b",
-          lineHeight: 1.2,
-        }}
+        className="text-2xl font-bold leading-[1.2]"
+        style={{ color: accent || "#1e293b" }}
       >
         {value}
       </span>
-      {sub && <span style={{ fontSize: 12, color: "#94a3b8" }}>{sub}</span>}
+      {sub && <span className="text-[12px] text-slate-400">{sub}</span>}
     </div>
   );
 }
 
-function PieCard({ title, sub, data, total, accentColor }) {
+function PieCard({ title, sub, data, total }) {
   const enriched = data.map((d) => ({ ...d, total }));
   const [activeIndex, setActiveIndex] = useState(null);
 
   return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid #f1f5f9",
-        borderRadius: 16,
-        padding: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-      }}
-    >
+    <div className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col gap-4">
       <div>
-        <h3
-          style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#1e293b" }}
-        >
+        <h3 className="m-0 text-[15px] font-semibold text-slate-800">
           {title}
         </h3>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#94a3b8" }}>
-          {sub}
-        </p>
+        <p className="mt-1 text-[13px] text-slate-400">{sub}</p>
       </div>
 
-      <div style={{ height: 220 }}>
+      <div className="h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -160,37 +99,25 @@ function PieCard({ title, sub, data, total, accentColor }) {
         </ResponsiveContainer>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {data.map((entry, i) => (
-          <div
-            key={entry.name}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="flex flex-col gap-2">
+        {data.map((entry) => (
+          <div key={entry.name} className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <span
+                className="w-2.5 h-2.5 rounded-[3px] shrink-0"
                 style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 3,
                   background: entry.fill,
                   border:
                     entry.fill === "#e2e8f0" ? "1px solid #cbd5e1" : "none",
-                  flexShrink: 0,
                 }}
               />
-              <span style={{ fontSize: 13, color: "#64748b" }}>
-                {entry.name}
-              </span>
+              <span className="text-[13px] text-slate-500">{entry.name}</span>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>
+            <div className="text-right">
+              <span className="text-[13px] font-semibold text-slate-800">
                 {entry.amount.toFixed(2)} GB
               </span>
-              <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: 6 }}>
+              <span className="text-[12px] text-slate-400 ml-1.5">
                 ({((entry.amount / total) * 100).toFixed(1)}%)
               </span>
             </div>
@@ -198,18 +125,9 @@ function PieCard({ title, sub, data, total, accentColor }) {
         ))}
       </div>
 
-      <div
-        style={{
-          background: "#f8fafc",
-          borderRadius: 8,
-          padding: "10px 14px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <span style={{ fontSize: 12, color: "#94a3b8" }}>Total limit</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>
+      <div className="bg-slate-50 rounded-lg py-2.5 px-3.5 flex items-center justify-between">
+        <span className="text-[12px] text-slate-400">Total limit</span>
+        <span className="text-[13px] font-semibold text-slate-600">
           {total} GB
         </span>
       </div>
@@ -220,14 +138,11 @@ function PieCard({ title, sub, data, total, accentColor }) {
 function Skeleton({ width = "100%", height = 20, radius = 6 }) {
   return (
     <div
+      className="bg-slate-200 animate-pulse"
       style={{
         width,
         height,
         borderRadius: radius,
-        background:
-          "linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)",
-        backgroundSize: "200% 100%",
-        animation: "shimmer 1.4s infinite",
       }}
     />
   );
@@ -235,50 +150,17 @@ function Skeleton({ width = "100%", height = 20, radius = 6 }) {
 
 function ErrorState({ message, onRetry }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 12,
-        padding: "48px 24px",
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          background: "#fef2f2",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 22,
-        }}
-      >
+    <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
+      <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-[22px]">
         ⚠️
       </div>
-      <p style={{ margin: 0, fontWeight: 600, color: "#1e293b", fontSize: 15 }}>
+      <p className="m-0 font-semibold text-slate-800 text-[15px]">
         Failed to load data
       </p>
-      <p style={{ margin: 0, color: "#94a3b8", fontSize: 13, maxWidth: 320 }}>
-        {message}
-      </p>
+      <p className="m-0 text-slate-400 text-[13px] max-w-[320px]">{message}</p>
       <button
         onClick={onRetry}
-        style={{
-          marginTop: 4,
-          padding: "8px 20px",
-          borderRadius: 8,
-          border: "1px solid #e2e8f0",
-          background: "white",
-          color: "#1e293b",
-          fontSize: 13,
-          fontWeight: 500,
-          cursor: "pointer",
-        }}
+        className="mt-1 py-2 px-5 rounded-lg border border-slate-200 bg-white text-slate-800 text-[13px] font-medium cursor-pointer hover:bg-slate-50 transition-colors"
       >
         Try again
       </button>
@@ -335,83 +217,22 @@ export default function StorageDashboard() {
     : [];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f8fafc",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        padding: "32px 24px",
-      }}
-    >
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-
-      <div style={{ maxWidth: 820, margin: "0 auto" }}>
-        <div
-          style={{
-            marginBottom: 28,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+    <div className="min-h-screen bg-light font-sans py-8 px-6">
+      <div className="max-w-[820px] mx-auto">
+        <div className="mb-7 flex items-center justify-between">
           <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 22,
-                fontWeight: 700,
-                color: "#0f172a",
-              }}
-            >
-              Storage Dashboard
-            </h1>
-            <p style={{ margin: "6px 0 0", fontSize: 14, color: "#94a3b8" }}>
-              Live usage {" "}
-              <code
-                style={{
-                  fontSize: 12,
-                  background: "#f1f5f9",
-                  padding: "2px 6px",
-                  borderRadius: 4,
-                  color: "#475569",
-                }}
-              >
-             
-              </code>
-            </p>
+            <h1 className="m-0 text-[22px] font-bold text-dark">Live usage </h1>
           </div>
           <button
             onClick={fetchData}
             disabled={loading}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 16px",
-              borderRadius: 8,
-              border: "1px solid #e2e8f0",
-              background: "white",
-              color: "#475569",
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
-            }}
+            className={`flex items-center gap-1.5 py-2 px-4 rounded-lg border border-slate-200 bg-white text-slate-600 text-[13px] font-medium transition-colors ${
+              loading
+                ? "cursor-not-allowed opacity-60"
+                : "cursor-pointer hover:bg-slate-50"
+            }`}
           >
-            <span
-              style={{
-                display: "inline-block",
-                animation: loading ? "spin 1s linear infinite" : "none",
-              }}
-            >
+            <span className={`inline-block ${loading ? "animate-spin" : ""}`}>
               ↻
             </span>
             Refresh
@@ -422,27 +243,12 @@ export default function StorageDashboard() {
           <ErrorState message={error} onRetry={fetchData} />
         ) : (
           <>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                gap: 12,
-                marginBottom: 24,
-              }}
-            >
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3 mb-6">
               {loading ? (
                 [1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    style={{
-                      background: "white",
-                      border: "1px solid #f1f5f9",
-                      borderRadius: 12,
-                      padding: "16px 20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 10,
-                    }}
+                    className="bg-white border border-slate-100 rounded-xl py-4 px-5 flex flex-col gap-2.5"
                   >
                     <Skeleton width="60%" height={12} />
                     <Skeleton width="80%" height={24} />
@@ -479,26 +285,12 @@ export default function StorageDashboard() {
               )}
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                gap: 20,
-              }}
-            >
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5">
               {loading ? (
                 [1, 2].map((i) => (
                   <div
                     key={i}
-                    style={{
-                      background: "white",
-                      border: "1px solid #f1f5f9",
-                      borderRadius: 16,
-                      padding: "24px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
-                    }}
+                    className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col gap-4"
                   >
                     <Skeleton width="40%" height={16} />
                     <Skeleton width="100%" height={220} radius={12} />
@@ -510,7 +302,9 @@ export default function StorageDashboard() {
                 <>
                   <PieCard
                     title="Storage"
-                    sub={`${storageUsed} GB used · ${(storageTotal - storageUsed).toFixed(2)} GB free`}
+                    sub={`${storageUsed} GB used · ${(
+                      storageTotal - storageUsed
+                    ).toFixed(2)} GB free`}
                     data={data.storageChartData.map((d) => ({
                       ...d,
                       fill: d.name === "Used" ? "#2a78d6" : "#e2e8f0",
@@ -519,7 +313,9 @@ export default function StorageDashboard() {
                   />
                   <PieCard
                     title="Bandwidth"
-                    sub={`${bwUsed} GB used · ${(bwTotal - bwUsed).toFixed(2)} GB remaining`}
+                    sub={`${bwUsed} GB used · ${(bwTotal - bwUsed).toFixed(
+                      2,
+                    )} GB remaining`}
                     data={bandwidthChartData}
                     total={bwTotal}
                   />
