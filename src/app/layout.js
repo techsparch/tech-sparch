@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import ProviderAuth from "@/helper/provider/ProviderAuth";
 import QueryProvider from "@/lib/provider/QueryProvider";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -161,6 +162,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
+      <GoogleAnalytics gaId="G-D4S02C820P" />
       <body className="min-h-full flex flex-col">
         <QueryProvider>
           <ProviderAuth>{children}</ProviderAuth>

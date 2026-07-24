@@ -12,7 +12,6 @@ export default function Navbar(pathname) {
   const [showTrigger, setShowTrigger] = useState(false);
   const { data: session, status } = useSession();
 
-  console.log(pathname.path, "pathmane");
 
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
