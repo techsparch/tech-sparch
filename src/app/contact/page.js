@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Phone, Mail, MapPin, Loader2, Send } from "lucide-react";
+import Navbar from "@/component/home/Nabvar/Navbar";
 
 // ─────────────────────────────────────────────
 // Config
@@ -395,11 +396,18 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <main className="bg-light px-6 py-24 md:py-32">
+
+    <>
+
+    <Navbar />
+
+      <main className="bg-light px-6 py-30 md:py-32">
       <div className="mx-auto grid max-w-7xl items-start gap-14 lg:grid-cols-2 lg:gap-20">
         <ContactInfo />
         <ContactForm />
       </div>
     </main>
+    </>
+  
   );
 }
