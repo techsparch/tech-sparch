@@ -6,8 +6,7 @@ const SubscriptionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
-      index: true,
+      unique: true, // Note: 'unique: true' automatically creates an index — no 'index: true' needed
     },
 
     assignedCaId: {
@@ -26,8 +25,7 @@ const SubscriptionSchema = new mongoose.Schema(
     razorpaySubscriptionId: {
       type: String,
       required: true,
-      unique: true,
-      index: true,
+      unique: true, // Automatically creates a unique index
     },
 
     razorpayPlanId: {
@@ -127,14 +125,10 @@ const SubscriptionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-SubscriptionSchema.index({ userId: 1 });
-SubscriptionSchema.index({ assignedCaId: 1 });
-SubscriptionSchema.index({ razorpaySubscriptionId: 1 });
-SubscriptionSchema.index({ status: 1 });
-SubscriptionSchema.index({ serviceEnabled: 1 });
+// Removed redundant schema-level index declarations from here
 
 const SubscriptionModel =
   mongoose.models.Subscription ||
