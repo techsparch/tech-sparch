@@ -84,20 +84,25 @@ export async function POST(req) {
     }
 
     const razorpaySubscriptionId = payloadEntity.id;
+    const paymentMethod = event.payload?.payment?.entity?.method ?? null;
+    const razorpayCustomerId = payloadEntity.customer_id ?? null;
+
     console.log(`[${debugId}] Razorpay subscription ID:`, razorpaySubscriptionId);
     console.log(`[${debugId}] Subscription status from Razorpay:`, payloadEntity.status);
+    console.log(`[${debugId}] Payment method:`, paymentMethod);
     console.log(`[${debugId}] current_start:`, payloadEntity.current_start, "->", payloadEntity.current_start ? new Date(payloadEntity.current_start * 1000).toISOString() : null);
     console.log(`[${debugId}] current_end:`, payloadEntity.current_end, "->", payloadEntity.current_end ? new Date(payloadEntity.current_end * 1000).toISOString() : null);
     console.log(`[${debugId}] charge_at:`, payloadEntity.charge_at, "->", payloadEntity.charge_at ? new Date(payloadEntity.charge_at * 1000).toISOString() : null);
     console.log(`[${debugId}] paid_count:`, payloadEntity.paid_count);
     console.log(`[${debugId}] total_count:`, payloadEntity.total_count);
 
-    // Find local subscription
-    const subscription = await SubscriptionModel.findOne({
-      razorpaySubscriptionId,
-    });
+    // Confirm the subscription exists locally (lean read, no mutation).
+    const existing = await SubscriptionModel.findOne(
+      { razorpaySubscriptionId },
+      { status: 1, graceDays: 1 }, // projection: only need these for logging / grace calc
+    ).lean();
 
-    if (!subscription) {
+    if (!existing) {
       console.log(
         `[${debugId}] ⚠️ No local subscription found for razorpaySubscriptionId="${razorpaySubscriptionId}". ` +
           `Check: does your DB actually store this exact ID? Log it when you create the subscription too.`,
@@ -108,62 +113,122 @@ export async function POST(req) {
       );
     }
 
-    console.log(`[${debugId}] Found local subscription. Current local status:`, subscription.status);
+    console.log(`[${debugId}] Found local subscription. Current local status:`, existing.status);
 
-    // 4. Handle Lifecycle Events
+    // 4. Handle Lifecycle Events — via atomic findOneAndUpdate
+    //
+    // Razorpay does not guarantee webhook delivery order (retries, resends from
+    // the dashboard, and network delays can all cause an "earlier" lifecycle
+    // event to arrive AFTER a "later" one). Without a precedence guard, a
+    // stale "authenticated" event arriving after "activated" will blindly
+    // overwrite status back to "authenticated" while leaving the
+    // active-period fields populated (which is the bug you hit).
+    //
+    // Rather than find() -> mutate -> save() (which reads status, then writes
+    // it back, leaving a race window where two concurrent webhook calls can
+    // both read the same stale status before either saves), we push the
+    // status check directly into the findOneAndUpdate FILTER. Mongo evaluates
+    // the filter and applies the update as a single atomic operation, so a
+    // concurrent request can never sneak in an out-of-order write between our
+    // read and our write.
+    //
+    // NON_TERMINAL: statuses an event is allowed to transition away from.
+    // Once a subscription is "expired" or "cancelled", nothing below (except
+    // an explicit "cancelled" event) is allowed to move it anywhere else.
+    const NON_TERMINAL = ["created", "authenticated", "active", "grace_period"];
+
     let matchedCase = true;
+    let updated = null;
+
     switch (eventType) {
-      case "subscription.authenticated":
-        subscription.status = "authenticated";
-        await subscription.save();
-        console.log(`[${debugId}] -> Set status to "authenticated"`);
+      case "subscription.authenticated": {
+        // Only allowed to move into "authenticated" from an earlier-stage
+        // status — never from "active"/"grace_period"/terminal states.
+        updated = await SubscriptionModel.findOneAndUpdate(
+          {
+            razorpaySubscriptionId,
+            status: { $in: ["created", "authenticated"] },
+          },
+          { $set: { status: "authenticated" } },
+          { new: true },
+        );
         break;
+      }
 
       case "subscription.activated":
       case "subscription.charged": {
-        subscription.status = "active";
-        subscription.serviceEnabled = true;
-        subscription.activatedAt = new Date();
-        subscription.lastPaymentAt = new Date();
-        subscription.currentPeriodStart = new Date(
-          payloadEntity.current_start * 1000,
+        const setFields = {
+          status: "active",
+          serviceEnabled: true,
+          activatedAt: new Date(),
+          lastPaymentAt: new Date(),
+          currentPeriodStart: new Date(payloadEntity.current_start * 1000),
+          currentPeriodEnd: new Date(payloadEntity.current_end * 1000),
+          nextRenewalAt: new Date(payloadEntity.charge_at * 1000),
+          gracePeriodEndsAt: null,
+        };
+        // Only set these if Razorpay actually sent a value — avoid
+        // overwriting a previously known value with null on later events.
+        if (paymentMethod) setFields.paymentMethod = paymentMethod;
+        if (razorpayCustomerId) setFields.razorpayCustomerId = razorpayCustomerId;
+
+        updated = await SubscriptionModel.findOneAndUpdate(
+          {
+            razorpaySubscriptionId,
+            status: { $in: NON_TERMINAL },
+          },
+          { $set: setFields },
+          { new: true },
         );
-        subscription.currentPeriodEnd = new Date(
-          payloadEntity.current_end * 1000,
-        );
-        subscription.nextRenewalAt = new Date(payloadEntity.charge_at * 1000);
-        subscription.gracePeriodEndsAt = null;
-        await subscription.save();
-        console.log(`[${debugId}] -> Set status to "active", serviceEnabled=true`);
         break;
       }
 
       case "subscription.pending":
       case "invoice.payment_failed": {
-        subscription.status = "grace_period";
-        const graceDays = subscription.graceDays || 7;
+        const graceDays = existing.graceDays || 7;
         const graceEnd = new Date();
         graceEnd.setDate(graceEnd.getDate() + graceDays);
-        subscription.gracePeriodEndsAt = graceEnd;
-        await subscription.save();
-        console.log(`[${debugId}] -> Set status to "grace_period", ends`, graceEnd.toISOString());
+
+        updated = await SubscriptionModel.findOneAndUpdate(
+          {
+            razorpaySubscriptionId,
+            status: { $in: NON_TERMINAL },
+          },
+          {
+            $set: { status: "grace_period", gracePeriodEndsAt: graceEnd },
+          },
+          { new: true },
+        );
         break;
       }
 
       case "subscription.halted": {
-        subscription.status = "expired";
-        subscription.serviceEnabled = false;
-        await subscription.save();
-        console.log(`[${debugId}] -> Set status to "expired"`);
+        updated = await SubscriptionModel.findOneAndUpdate(
+          {
+            razorpaySubscriptionId,
+            status: { $in: NON_TERMINAL },
+          },
+          { $set: { status: "expired", serviceEnabled: false } },
+          { new: true },
+        );
         break;
       }
 
       case "subscription.cancelled": {
-        subscription.status = "cancelled";
-        subscription.serviceEnabled = false;
-        subscription.cancelledAt = new Date();
-        await subscription.save();
-        console.log(`[${debugId}] -> Set status to "cancelled"`);
+        // Cancellation is always allowed through — no status filter — since
+        // it reflects an explicit user/merchant action and should win over
+        // any other state.
+        updated = await SubscriptionModel.findOneAndUpdate(
+          { razorpaySubscriptionId },
+          {
+            $set: {
+              status: "cancelled",
+              serviceEnabled: false,
+              cancelledAt: new Date(),
+            },
+          },
+          { new: true },
+        );
         break;
       }
 
@@ -175,11 +240,30 @@ export async function POST(req) {
         );
     }
 
-    console.log(`[${debugId}] Final local status after handling:`, subscription.status);
+    if (matchedCase) {
+      if (updated) {
+        console.log(`[${debugId}] -> Updated. New status:`, updated.status);
+      } else {
+        // findOneAndUpdate returned null: either the doc vanished between our
+        // existence check and now (unlikely), or — far more commonly — the
+        // status filter didn't match, meaning this event is stale/out-of-order
+        // and was correctly rejected.
+        console.log(
+          `[${debugId}] ⚠️ Update did not apply for "${eventType}" — local status "${existing.status}" is not a valid source state for this event (stale/out-of-order webhook, safely ignored).`,
+        );
+      }
+    }
+
     console.log(`[${debugId}] ========== END ==========\n`);
 
     return NextResponse.json(
-      { success: true, received: true, matchedCase, eventType },
+      {
+        success: true,
+        received: true,
+        matchedCase,
+        applied: !!updated,
+        eventType,
+      },
       { status: 200 },
     );
   } catch (error) {
