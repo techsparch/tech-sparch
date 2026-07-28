@@ -150,7 +150,7 @@ export async function POST(req) {
             status: { $in: ["created", "authenticated"] },
           },
           { $set: { status: "authenticated" } },
-          { new: true },
+          { returnDocument: "after" },
         );
         break;
       }
@@ -178,7 +178,7 @@ export async function POST(req) {
             status: { $in: NON_TERMINAL },
           },
           { $set: setFields },
-          { new: true },
+          { returnDocument: "after" },
         );
         break;
       }
@@ -197,7 +197,7 @@ export async function POST(req) {
           {
             $set: { status: "grace_period", gracePeriodEndsAt: graceEnd },
           },
-          { new: true },
+          { returnDocument: "after" },
         );
         break;
       }
@@ -209,7 +209,7 @@ export async function POST(req) {
             status: { $in: NON_TERMINAL },
           },
           { $set: { status: "expired", serviceEnabled: false } },
-          { new: true },
+          { returnDocument: "after" },
         );
         break;
       }
@@ -227,7 +227,7 @@ export async function POST(req) {
               cancelledAt: new Date(),
             },
           },
-          { new: true },
+          { returnDocument: "after" },
         );
         break;
       }

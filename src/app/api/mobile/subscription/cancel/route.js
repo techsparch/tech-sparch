@@ -97,7 +97,7 @@ export async function POST(request) {
           cancelledAt: new Date(),
         },
       },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     if (!updated) {
