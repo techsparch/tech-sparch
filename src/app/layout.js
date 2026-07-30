@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import ProviderAuth from "@/helper/provider/ProviderAuth";
 import QueryProvider from "@/lib/provider/QueryProvider";
-import { GoogleAnalytics } from '@next/third-parties/google';
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -152,7 +152,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased `}
     >
       <head>
         <script

@@ -75,16 +75,6 @@ export async function POST(request) {
       }
     }
 
-    // 3. Update DB state atomically.
-    // Filter includes the same status condition as our initial read so this
-    // write only applies if the document is still in a cancellable state
-    // (guards against a race with e.g. a webhook that already moved it to
-    // "expired"/"cancelled" between step 1 and now).
-    //
-    // IMPORTANT: serviceEnabled must be turned off here — the original code
-    // set status/cancelledAt but left serviceEnabled untouched, which meant
-    // a cancelled user kept access indefinitely (serviceEnabled stayed true
-    // from whatever it was set to during "active").
     const updated = await SubscriptionModel.findOneAndUpdate(
       {
         _id: subscription._id,
