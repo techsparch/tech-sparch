@@ -36,6 +36,7 @@ import { AddClientDialog } from "@/component/dashboard/staff/AddClientDialog";
 import { ClientSearch } from "@/component/dashboard/staff/ClientSearch";
 import { useDebounce } from "@/hooks/staff/useDebounce";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const StaffDashboard = () => {
   // Pagination & Search state
@@ -58,6 +59,8 @@ const StaffDashboard = () => {
   const hasFullAccess = data?.hasFullAccess || false;
   const totalPages = data?.totalPages || 1;
   const totalUsers = data?.totalUsers || 0;
+
+  const router = useRouter();
 
   if (isError) {
     return (
@@ -85,6 +88,14 @@ const StaffDashboard = () => {
           <ClientSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
           <AddClientDialog onSuccess={refetch} />
+          <Button
+            onClick={() => {
+              router.push("/dashboard/staff/task");
+            }}
+            className="bg-light border text-dark hover:-bg-light"
+          >
+            Check Task
+          </Button>
         </div>
       </div>
 

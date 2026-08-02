@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"; // Added Skeleton import
 
 import CreateAccountDialog from "@/component/dashboard/system/CreateAccountDialog";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // Moved outside the component to prevent unnecessary recreations on every render
 function formatDate(isoString) {
@@ -37,8 +38,11 @@ export default function SystemDashboardPage() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [roleCounts, setRoleCounts] = useState([]);
   const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Added loading state
+
+  const router = useRouter();
   const fetchData = async () => {
     setIsLoading(true); // Start loading
     try {
@@ -67,16 +71,14 @@ export default function SystemDashboardPage() {
 
   const roles = ["system", "ca", "staff", "client"];
 
-
   const handleAccountCreated = () => {
     // Refresh the dashboard's own data
-    refetch(); 
-    
+    refetch();
+
     // Wipe the cached staff list so the Staff page fetches fresh data!
     // NOTE: Make sure "staff" matches the exact queryKey used in your useGetStaffForAccountManager hook.
-    queryClient.invalidateQueries({ queryKey: ["staff"] }); 
+    queryClient.invalidateQueries({ queryKey: ["staff"] });
   };
-
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -86,11 +88,20 @@ export default function SystemDashboardPage() {
   const getRoleCount = (role) =>
     roleCounts.find((r) => r._id === role)?.count ?? 0;
 
+  const pushManagerTab = () => {
+    router.push("/dashboard/system/account-manager");
+  };
+    const pushClientTab = () => {
+    router.push("/dashboard/system/clients");
+  };
+
   return (
     <div className="p-6 space-y-6 bg-light/50 min-h-screen">
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-dark">System Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-dark">
+          System Dashboard
+        </h1>
         <p className="text-sm text-dark">
           Manage CA firm accounts, roles and access control
         </p>
@@ -101,7 +112,9 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-md text-dark tracking-tight ">Total Accounts</p>
+              <p className="text-md text-dark tracking-tight ">
+                Total Accounts
+              </p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -112,7 +125,7 @@ export default function SystemDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card onClick={pushClientTab}> 
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-md text-dark tracking-tight">Active Users</p>
@@ -126,7 +139,7 @@ export default function SystemDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card onClick={pushManagerTab}>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-md text-dark tracking-tight">CA Accounts</p>
@@ -143,7 +156,9 @@ export default function SystemDashboardPage() {
         <Card>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-md text-dark tracking-tight">Client Accounts</p>
+              <p className="text-md text-dark tracking-tight">
+                Client Accounts
+              </p>
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
@@ -164,7 +179,12 @@ export default function SystemDashboardPage() {
               Staff, CA and Client accounts
             </p>
           </div>
-          <Button className="bg-dark text-light tracking-tight" onClick={() => setOpen(true)}>+ Create Account</Button>
+          <Button
+            className="bg-dark text-light tracking-tight"
+            onClick={() => setOpen(true)}
+          >
+            + Create Account
+          </Button>
         </CardHeader>
 
         <CardContent>

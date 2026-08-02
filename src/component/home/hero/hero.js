@@ -51,9 +51,9 @@ const Hero = () => {
         </h1>
 
         {/* Matching Subtitle */}
-        <p className="mx-auto mb-10 max-w-2xl text-lg font-medium text-dark/70 md:text-xl">
-          Experience a frictionless, modern portal designed to keep your
-          financial documents, invoices, and compliance securely on track.
+        <p className="mx-auto mb-10 max-w-2xl text-lg font-medium text-dark/70 md:text-xl first-letter:ca">
+          Experience A Frictionless, Modern Portal Designed To Keep Your
+          Financial Documents, Invoices, And Compliance Securely No Track.
         </p>
 
         {/* Call to Action Buttons */}

@@ -10,7 +10,7 @@ import HowItWorksSection from "@/component/home/Works/HowItWorksSection";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-light">
+    <div className="min-h-screen bg-light capitalize">
       {" "}
       {/* Added base background color */}
       {/* <UnderConstruction /> */}

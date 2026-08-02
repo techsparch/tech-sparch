@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Settings,
   UserCog,
+  UserLock,
   Users,
 } from "lucide-react";
 
@@ -43,10 +44,12 @@ export default function DashboardLayout({ children }) {
   const items = [
     { title: "Dashboard", url: "/dashboard/system", icon: LayoutDashboard },
     { title: "Clients", url: "/dashboard/system/clients", icon: Users },
+    { title: "account Manager", url: "/dashboard/system/account-manager", icon: UserLock },
+
     { title: "Usages", url: "/dashboard/system/usage", icon: FileText },
-    { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
-    { title: "Employees", url: "/dashboard/employees", icon: UserCog },
-    { title: "Settings", url: "/dashboard/settings", icon: Settings },
+    { title: "Tasks", url: "/dashboard/system/tasks", icon: CheckSquare },
+
+    { title: "Settings", url: "/dashboard/system/settings", icon: Settings },
   ];
 
 

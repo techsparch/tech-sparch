@@ -14,11 +14,11 @@ const WHATSAPP_NUMBER = "+919309833172";
 
 const TEAM_SIZE_OPTIONS = [
   "Just me",
-  "2–10 Employees",
-  "11–25 Employees",
-  "26–50 Employees",
-  "51–100 Employees",
-  "100+ Employees",
+  "2–10 Client",
+  "11–25 Client",
+  "26–50 Client",
+  "51–100 Client",
+  "100+ Client",
 ];
 
 const EMPTY_FORM = {
@@ -188,9 +188,15 @@ function ContactInfo() {
         </InfoCard>
 
         <InfoCard icon={MapPin} title="Location">
-          Solapur, Maharashtra
-          <br />
-          India
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=The+Pride+Vishrambag+Near+Kranti+Bhel+Behind+BJP+Office+Sangli+416415"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline transition-colors hover:text-light block"
+          >
+            The Pride @ Vishrambag, Near Kranti Bhel, Behind BJP Office, Sangli
+            - 416415
+          </a>
         </InfoCard>
       </div>
     </div>
@@ -396,18 +402,14 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-
     <>
-
-    <Navbar />
-
-      <main className="bg-light px-6 py-30 md:py-32">
-      <div className="mx-auto grid max-w-7xl items-start gap-14 lg:grid-cols-2 lg:gap-20">
-        <ContactInfo />
-        <ContactForm />
-      </div>
-    </main>
+      <Navbar />
+      <main className="bg-light px-6 py-30 md:py-32 capitalize">
+        <div className="mx-auto grid max-w-7xl items-start gap-14 lg:grid-cols-2 lg:gap-20">
+          <ContactInfo />
+          <ContactForm />
+        </div>
+      </main>
     </>
-  
   );
 }

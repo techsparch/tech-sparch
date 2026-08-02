@@ -2,7 +2,7 @@ import { UserPlus, FileSearch, CheckCircle2 } from "lucide-react";
 
 export default function HowItWorksSection() {
   return (
-    <section className="bg-light py-24 relative overflow-hidden ">
+    <section className="bg-light py-24 relative overflow-hidden capitalize">
       {/* Background decoration (Subtle grid or glow) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#093C5D1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 

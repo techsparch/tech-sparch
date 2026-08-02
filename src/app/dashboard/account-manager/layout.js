@@ -44,8 +44,7 @@ export default function DashboardLayout({ children }) {
     },
     { title: "Staff", url: "/dashboard/account-manager/staff", icon: UserCog },
 
-    // { title: "usages", url: "/dashboard/system/usage", icon: FileText },
-    { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
+    { title: "Tasks", url: "/dashboard/account-manager/task", icon: CheckSquare },
     { title: "Settings", url: "/dashboard/settings", icon: Settings },
   ];
 

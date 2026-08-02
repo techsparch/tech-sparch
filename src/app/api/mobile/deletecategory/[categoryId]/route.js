@@ -7,6 +7,10 @@ import { NextResponse } from "next/server";
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
+    const authUser = getUser(request);
+    if (!authUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const { categoryId } = await params;
 
     // 1. Find Category

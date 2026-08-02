@@ -49,7 +49,7 @@ export default function AboutPage() {
       ></div>
 
       <main
-        className="min-h-screen bg-light dark:bg-dark text-dark dark:text-light"
+        className="min-h-screen bg-light dark:bg-dark text-dark dark:text-light capitalize"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -62,11 +62,11 @@ export default function AboutPage() {
           />
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-balance">
-            Building a digital future with{" "}
-            <span className="text-taupe-400 tracking-wide underline underline-offset-4">
-              paperless
-            </span>{" "}
-            workflows
+           Work Smarter with Automated  {" "}
+           <span className="text-taupe-400 tracking-wide underline underline-offset-4">
+              Document
+            </span> {" "}
+            Management.{" "}
           </h1>
 
           <p className="text-lg md:text-xl text-dark/70 dark:text-light/70 max-w-3xl mx-auto tracking-tight">
@@ -349,20 +349,34 @@ export default function AboutPage() {
                 </h4>
                 <ul className="space-y-4 text-sm text-dark/70">
                   <li className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-taupe-500" />
-                    support@techsparch.com
+                    <Mail className="h-4 w-4 text-taupe-500 shrink-0" />
+                    <a
+                      href="mailto:techsparch.ss@gmail.com"
+                      className="hover:underline transition-colors hover:text-dark"
+                    >
+                      techsparch.ss@gmail.com
+                    </a>
                   </li>
                   <li className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-taupe-500" />
-                    +91 (800) 123-4567
+                    <a
+                      href="tel:+919309833172"
+                      className="hover:underline transition-colors hover:text-dark"
+                    >
+                      +91 9309833172
+                    </a>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <MapPin className="h-4 w-4 text-taupe-500 mt-0.5" />
-                    <span>
-                      123 Financial District,
-                      <br />
-                      Mumbai, Maharashtra
-                    </span>
+                  <li className="flex items-start gap-3 max-w-xs">
+                    <MapPin className="h-4 w-4 text-taupe-500 mt-0.5 shrink-0" />
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=The+Pride+Vishrambag+Near+Kranti+Bhel+Behind+BJP+Office+Sangli+416415"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline transition-colors hover:text-dark block"
+                    >
+                      The Pride @ Vishrambag, Near Kranti Bhel, Behind BJP
+                      Office, Sangli - 416415
+                    </a>
                   </li>
                 </ul>
               </div>
