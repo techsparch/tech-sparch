@@ -57,11 +57,11 @@ export async function POST(request) {
     const PLAN_CONFIG = {
       monthly: {
         id: process.env.RAZORPAY_PLAN_ID_MONTHLY,
-        total_count: 12, // Number of billing cycles (e.g., 12 months)
+        total_count: 60, // Number of billing cycles (e.g., 12 months)
       },
       yearly: {
         id: process.env.RAZORPAY_PLAN_ID_YEARLY,
-        total_count: 1, // Number of billing cycles (e.g., 1 year)
+        total_count: 5, // Number of billing cycles (e.g., 1 year)
       },
     };
 
