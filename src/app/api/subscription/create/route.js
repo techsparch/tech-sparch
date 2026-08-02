@@ -8,8 +8,22 @@ import UserModel from "@/model/user/user.model";
 import SubscriptionModel from "@/model/payment/subscription.model";
 import razorpay from "@/lib/razorpay/razorpay";
 
-export async function POST() {
+export async function POST(request) {
   try {
+    // 1. Extract the selected plan type from the request body
+    const body = await request.json();
+    const { planType } = body;
+
+    if (!["weekly", "monthly", "yearly"].includes(planType)) {
+      return NextResponse.json(
+        {
+          message:
+            "Invalid plan type. Must be 'weekly', 'monthly', or 'yearly'.",
+        },
+        { status: 400 },
+      );
+    }
+
     await connectDB();
 
     // Authenticate
@@ -21,8 +35,8 @@ export async function POST() {
 
     const currentUser = session.user.id;
 
-    // Find User
-    const user = await UserModel.findById(currentUser);
+    // Find User (using .lean() for faster read performance)
+    const user = await UserModel.findById(currentUser).lean();
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -36,61 +50,113 @@ export async function POST() {
       );
     }
 
-    // CA must exist
+    
     if (!user.assignedCaId) {
       return NextResponse.json({ message: "No CA assigned." }, { status: 400 });
     }
 
-    // Existing subscription
-    const existingSubscription = await SubscriptionModel.findOne({
+    // Check for existing active subscriptions
+    // Note: We removed "created" from this list so abandoned checkouts don't block new attempts
+    const activeSubscription = await SubscriptionModel.findOne({
       userId: user._id,
       status: {
-        $in: ["created", "authenticated", "active", "grace_period"],
+        $in: ["authenticated", "active", "grace_period"],
       },
-    });
+    }).lean();
 
-    if (existingSubscription) {
+    if (activeSubscription) {
       return NextResponse.json(
         {
-          message: "Subscription already exists.",
+          message: "You already have an active subscription.",
         },
         { status: 409 },
       );
     }
 
+    // Configure Plan Map based on environment variables
+    const PLAN_CONFIG = {
+      monthly: {
+        id: process.env.RAZORPAY_PLAN_ID_MONTHLY,
+        total_count: 60, // 5 years
+      },
+      yearly: {
+        id: process.env.RAZORPAY_PLAN_ID_YEARLY,
+        total_count: 5, // 5 years
+      },
+    };
+
+    const selectedConfig = PLAN_CONFIG[planType];
+
+    if (!selectedConfig.id) {
+      return NextResponse.json(
+        { message: `${planType} plan ID is not configured on the server.` },
+        { status: 500 },
+      );
+    }
+
     // Fetch Razorpay Plan
-    const plan = await razorpay.plans.fetch(process.env.RAZORPAY_PLAN_ID);
+    const plan = await razorpay.plans.fetch(selectedConfig.id);
 
     // Create Razorpay Subscription
     const razorpaySubscription = await razorpay.subscriptions.create({
-      plan_id: process.env.RAZORPAY_PLAN_ID,
-      total_count: 12,
+      plan_id: selectedConfig.id,
+      total_count: selectedConfig.total_count,
       quantity: 1,
       customer_notify: 1,
-
       notes: {
         userId: user._id.toString(),
         assignedCaId: user.assignedCaId.toString(),
+        planType: planType,
       },
     });
 
-    // Save in MongoDB
-    const subscription = await SubscriptionModel.create({
-      userId: user._id,
-      assignedCaId: user.assignedCaId,
-      razorpaySubscriptionId: razorpaySubscription.id,
-      razorpayPlanId: razorpaySubscription.plan_id,
-      amount: plan.item.amount / 100,
-      currency: plan.item.currency,
-      planName: plan.item.name,
-      status: "created",
-      serviceEnabled: false,
-    });
+    // Save in MongoDB safely (Preserve History)
+    let subscription = await SubscriptionModel.findOneAndUpdate(
+      {
+        userId: user._id,
+        status: "created", // Overwrites ONLY if it is an abandoned checkout
+      },
+      {
+        userId: user._id,
+        assignedCaId: user.assignedCaId,
+        razorpaySubscriptionId: razorpaySubscription.id,
+        razorpayPlanId: razorpaySubscription.plan_id,
+        amount: plan.item.amount / 100,
+        currency: plan.item.currency,
+        planName: plan.item.name,
+        status: "created",
+        serviceEnabled: false,
+      },
+      {
+        new: true,
+      },
+    );
+
+    // If no abandoned checkout existed to overwrite, create a new record
+    if (!subscription) {
+      subscription = await SubscriptionModel.create({
+        userId: user._id,
+        assignedCaId: user.assignedCaId,
+        razorpaySubscriptionId: razorpaySubscription.id,
+        razorpayPlanId: razorpaySubscription.plan_id,
+        amount: plan.item.amount / 100,
+        currency: plan.item.currency,
+        planName: plan.item.name,
+        status: "created",
+        serviceEnabled: false,
+      });
+    }
 
     return NextResponse.json({
       success: true,
       key: process.env.RAZORPAY_KEY_ID,
       subscriptionId: razorpaySubscription.id,
+      plan: {
+        type: planType,
+        name: plan.item.name,
+        amount: plan.item.amount / 100,
+        currency: plan.item.currency,
+      },
       subscription,
     });
   } catch (error) {
@@ -99,7 +165,8 @@ export async function POST() {
     return NextResponse.json(
       {
         success: false,
-        message: error.error?.description || error.message,
+        message:
+          error.error?.description || error.message || "Internal Server Error",
       },
       {
         status: 500,
