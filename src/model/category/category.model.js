@@ -40,7 +40,7 @@ const documentCategorySchema = new mongoose.Schema(
   },
 );
 
-documentCategorySchema.index({ clientId: 1, categoryName: 1 }, { unique: true });
+documentCategorySchema.index({ createdBy: 1, categoryName: 1 }, { unique: true });
 
 const CategoryModel =
   mongoose.models.DocumentCategory ||
