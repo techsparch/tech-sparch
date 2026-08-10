@@ -26,6 +26,7 @@ export async function POST(request) {
 
     const exists = await CategoryModel.findOne({
       categoryName: categoriesName.trim(),
+      createdBy: authUser.id,
     });
 
     if (exists) {
