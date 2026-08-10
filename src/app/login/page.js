@@ -110,9 +110,19 @@ const Page = () => {
 
           {/* PASSWORD */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-dark/80">
-              Password
-            </label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="block text-sm font-semibold text-dark/80">
+                Password
+              </label>
+              {/* FORGOT PASSWORD BUTTON */}
+              <button
+                type="button"
+                onClick={() => router.push("/forgot-password")}
+                className="text-xs font-semibold text-dark/60 transition-colors hover:text-dark hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
             <input
               name="password"
               type="password"

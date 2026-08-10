@@ -52,7 +52,7 @@ const UserSchema = new mongoose.Schema(
     accessCode: {
       type: String,
       unique: true,
-      sparse: true, // ✅ allows null/missing
+      sparse: true, 
       select: false,
     },
 
@@ -130,6 +130,12 @@ const UserSchema = new mongoose.Schema(
       default: "",
     },
 
+    // user.model.js
+    resetOtp: { type: String, default: null },
+    resetOtpExpiry: { type: Date, default: null },
+    resetPasswordCount: { type: Number, default: 0 },
+    resetPasswordWindowStart: { type: Date, default: null },
+    resetOtpAttempts: { type: Number, default: 0 }, // <-- ADD THIS
     bio: {
       type: String,
       trim: true,

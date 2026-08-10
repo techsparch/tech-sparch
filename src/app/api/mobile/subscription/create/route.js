@@ -57,11 +57,11 @@ export async function POST(request) {
     const PLAN_CONFIG = {
       monthly: {
         id: process.env.RAZORPAY_PLAN_ID_MONTHLY,
-        total_count: 60, 
+        total_count: 60,
       },
       yearly: {
         id: process.env.RAZORPAY_PLAN_ID_YEARLY,
-        total_count: 5, 
+        total_count: 5,
       },
     };
 

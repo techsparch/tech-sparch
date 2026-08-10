@@ -37,7 +37,7 @@ export const authOptions = {
 
         if (!isValidPassword) throw new Error("Invalid password");
 
-        // ✅ Fetch subscription status for clients
+        // Fetch subscription status for clients
         let serviceEnabled = true;
         if (user.role === "client") {
           const subscription = await SubscriptionModel.findOne({
@@ -45,8 +45,6 @@ export const authOptions = {
           })
             .select("+serviceEnabled")
             .lean();
-
-          console.log(subscription);
 
           serviceEnabled = subscription ? subscription.serviceEnabled : false;
         }
@@ -56,7 +54,8 @@ export const authOptions = {
           name: user.name,
           mobile: user.mobile,
           role: user.role,
-          serviceEnabled, 
+          serviceEnabled,
+          mustChangePassword: user.mustChangePassword,
         };
       },
     }),
@@ -80,8 +79,7 @@ export const authOptions = {
 
         const user = await UserModel.findOne({
           accessCode: cleanCode,
-          role: "client",
-        });
+        }).select("+accessCode");
 
         if (!user) {
           throw new Error("Invalid access code");
@@ -91,12 +89,13 @@ export const authOptions = {
           throw new Error("Account is disabled");
         }
 
-        // ✅ Fetch subscription status for clients
+        // Fetch subscription status for clients
         const subscription = await SubscriptionModel.findOne({
           userId: user._id,
         })
           .select("+serviceEnabled")
           .lean();
+
         const serviceEnabled = subscription
           ? subscription.serviceEnabled
           : false;
@@ -106,7 +105,8 @@ export const authOptions = {
           name: user.name,
           mobile: user.mobile,
           role: user.role,
-          serviceEnabled, // ✅ Attach to user object
+          serviceEnabled,
+          mustChangePassword: user.mustChangePassword, // Added this here for consistency
         };
       },
     }),
@@ -119,10 +119,11 @@ export const authOptions = {
         token.id = user.id;
         token.mobile = user.mobile;
         token.role = user.role;
-        token.serviceEnabled = user.serviceEnabled; // ✅ Store in token
+        token.serviceEnabled = user.serviceEnabled;
+        token.mustChangePassword = user.mustChangePassword; // FIXED: Added to token
       }
 
-      // 2. Client-side update: Allows us to update the session immediately after payment
+      // 2. Client-side update
       if (trigger === "update" && session?.serviceEnabled !== undefined) {
         token.serviceEnabled = session.serviceEnabled;
       }
@@ -132,11 +133,12 @@ export const authOptions = {
 
     async session({ session, token }) {
       // 3. Pass token properties to the client-side session object
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id;
         session.user.mobile = token.mobile;
         session.user.role = token.role;
-        session.user.serviceEnabled = token.serviceEnabled; // ✅ Available on frontend!
+        session.user.serviceEnabled = token.serviceEnabled;
+        session.user.mustChangePassword = token.mustChangePassword; // FIXED: Map FROM token TO session
       }
       return session;
     },
@@ -144,7 +146,7 @@ export const authOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 48 * 60 * 60, // 24 hours
   },
 
   pages: {
