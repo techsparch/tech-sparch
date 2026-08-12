@@ -14,8 +14,6 @@ export async function POST(request) {
     const body = await request.json().catch(() => null);
     const accessCode = body?.accessCode;
 
-    console.log(accessCode)
-
     // Strict type + presence check — blocks NoSQL injection via
     // objects like { "$ne": null } or { "$gt": "" }
     if (!accessCode || typeof accessCode !== "string") {
