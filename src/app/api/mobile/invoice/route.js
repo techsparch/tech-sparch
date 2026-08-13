@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 
 import { connectDB } from "@/lib/dbconnection/db";
 import InvoiceModel from "@/model/payment/invoice.model";
-import { authOptions } from "../auth/[...nextauth]/option";
+import { getUser } from "@/helper/auth/auth";
 
 export async function GET(request) {
   try {
