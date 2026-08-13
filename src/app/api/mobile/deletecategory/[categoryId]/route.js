@@ -1,3 +1,4 @@
+import { getUser } from "@/helper/auth/auth";
 import cloudinary from "@/lib/cloudinary/connection";
 import { connectDB } from "@/lib/dbconnection/db";
 import CategoryModel from "@/model/category/category.model";
@@ -25,7 +26,6 @@ export async function DELETE(request, { params }) {
     // 2. Find associated Documents
     const documents = await DocumentModel.find({ categoryId: category._id });
 
-    // 3. Extract publicId using camelCase matching your schema
     if (documents.length > 0) {
       const publicIds = documents
         .map((doc) => doc.publicId) // <-- Matches your schema (publicId)

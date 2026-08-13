@@ -18,6 +18,7 @@ export default function CategoryPage() {
     refetch,
   } = useDocumentsForAccountManager(id, categoryId);
 
+
   // Modal state management
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);

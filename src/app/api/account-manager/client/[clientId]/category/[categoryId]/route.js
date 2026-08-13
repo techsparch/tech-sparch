@@ -39,6 +39,7 @@ export async function GET(request, { params }) {
         { status: 400 },
       );
     }
+    
 
     const client = await UserModel.findOne({
       _id: clientId,

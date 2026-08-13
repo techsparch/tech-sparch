@@ -6,7 +6,7 @@ export async function POST(req) {
     const body = await req.json();
     const folder = body.folder || "sp-consultancy";
 
-    console.log(folder);
+   
 
     const timestamp = Math.floor(Date.now() / 1000);
 

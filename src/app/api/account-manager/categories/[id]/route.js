@@ -5,6 +5,7 @@ import DocumentModel from "@/model/doc/doc.model";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/option";
 import CategoryModel from "@/model/category/category.model";
+import SubscriptionModel from "@/model/payment/subscription.model";
 
 export async function GET(request, { params }) {
   try {
@@ -107,6 +108,27 @@ export async function POST(request, { params }) {
       return NextResponse.json(
         { message: "Category already exists." },
         { status: 409 },
+      );
+    }
+
+    // 6. Check Active Subscription (Updated to include gracePeriod)
+    const checkUserSubscribe = await SubscriptionModel.findOne({
+      userId: clientId,
+    });
+
+    // Define allowed statuses
+    const allowedStatuses = ["active", "gracePeriod"];
+
+    if (
+      !checkUserSubscribe ||
+      !allowedStatuses.includes(checkUserSubscribe.status)
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Action denied. An active subscription is required to create new categories.",
+        },
+        { status: 403 },
       );
     }
 

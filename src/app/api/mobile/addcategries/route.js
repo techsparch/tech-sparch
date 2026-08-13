@@ -1,6 +1,7 @@
 import { getUser } from "@/helper/auth/auth";
 import { connectDB } from "@/lib/dbconnection/db";
 import CategoryModel from "@/model/category/category.model";
+import SubscriptionModel from "@/model/payment/subscription.model";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
@@ -21,6 +22,27 @@ export async function POST(request) {
       return NextResponse.json(
         { message: "Category name and Client ID are required." },
         { status: 400 },
+      );
+    }
+
+    // 6. Check Active Subscription (Updated to include gracePeriod)
+    const checkUserSubscribe = await SubscriptionModel.findOne({
+      userId: clientId,
+    });
+
+    // Define allowed statuses
+    const allowedStatuses = ["active", "gracePeriod"];
+
+    if (
+      !checkUserSubscribe ||
+      !allowedStatuses.includes(checkUserSubscribe.status)
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Action denied. An active subscription is required to create new categories.",
+        },
+        { status: 403 },
       );
     }
 
