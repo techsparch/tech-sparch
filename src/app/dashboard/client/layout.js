@@ -44,7 +44,7 @@ const items = [
 
   {
     title: "Payments",
-    url: "/user/payments",
+    url: "/dashboard/client/payments",
     icon: CreditCard,
   },
   {

@@ -7,7 +7,6 @@ import InvoiceModel from "@/model/payment/invoice.model";
 
 export async function POST(req) {
   const debugId = crypto.randomUUID().slice(0, 8);
-  console.log(`\n========== [${debugId}] WEBHOOK HIT ==========`);
 
   try {
     const rawBody = await req.text();
@@ -37,7 +36,6 @@ export async function POST(req) {
     const eventType = event.event;
     await connectDB();
 
-    console.log(`[${debugId}] ✅ Event verified:`, eventType);
 
  
     if (eventType === "invoice.paid") {
@@ -66,7 +64,6 @@ export async function POST(req) {
             },
             { upsert: true, new: true }
           );
-          console.log(`[${debugId}] ✅ Invoice ${invoiceData.id} saved.`);
         }
       }
 
@@ -146,7 +143,6 @@ export async function POST(req) {
         break;
     }
 
-    console.log(`[${debugId}] ========== END ==========\n`);
     return NextResponse.json({ success: true, applied: !!updated }, { status: 200 });
 
   } catch (error) {
