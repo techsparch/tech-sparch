@@ -1,7 +1,10 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation"; // Import the router
 
 const Hero = () => {
+  const router = useRouter(); // Initialize the router
+
   // State to track mouse coordinates
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -14,6 +17,9 @@ const Hero = () => {
       y: e.clientY - rect.top,
     });
   };
+
+  const APK_URL =
+    "https://expo.dev/artifacts/eas/jIXsuxIBuAUeMRfrcmM-6i5SoOqv9ZSG7JeMRISgzmE.apk";
 
   return (
     <main
@@ -51,17 +57,26 @@ const Hero = () => {
         </h1>
 
         {/* Matching Subtitle */}
-        <p className="mx-auto mb-10 max-w-2xl text-lg font-medium text-dark/70 md:text-xl first-letter:ca">
+        <p className="mx-auto mb-10 max-w-2xl text-lg font-medium text-dark/70 md:text-xl first-letter:capitalize">
           Experience A Frictionless, Modern Portal Designed To Keep Your
-          Financial Documents, Invoices, And Compliance Securely No Track.
+          Financial Documents, Invoices, And Compliance Securely On Track.
         </p>
 
         {/* Call to Action Buttons */}
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row pointer-events-auto">
-          <button className="w-full rounded-full bg-dark px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-light transition-all duration-300 hover:-translate-y-1 hover:bg-dark/90 hover:shadow-[0_10px_30px_rgba(15,23,42,0.2)] sm:w-auto">
-            Client Login
-          </button>
-          <button className="w-full rounded-full border-2 border-dark/20 bg-transparent px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-dark transition-all duration-300 hover:-translate-y-1 hover:border-dark sm:w-auto">
+        <div className="pointer-events-auto flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a
+            href={APK_URL}
+            aria-label="Download Client App"
+            className="w-full rounded-full bg-dark px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-light transition-all duration-300 hover:-translate-y-1 hover:bg-dark/90 hover:shadow-[0_10px_30px_rgba(15,23,42,0.2)] sm:w-auto"
+          >
+            Download App
+          </a>
+          
+          {/* Updated View Features Button */}
+          <button 
+            onClick={() => router.push('/services')} 
+            className="w-full rounded-full border-2 border-dark/20 bg-transparent px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] text-dark transition-all duration-300 hover:-translate-y-1 hover:border-dark sm:w-auto"
+          >
             View Features
           </button>
         </div>
