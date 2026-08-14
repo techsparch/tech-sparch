@@ -21,7 +21,7 @@ export async function POST(request) {
     // 2. Validate input and return a 400 status if missing
     if (!categoriesName) {
       return NextResponse.json(
-        { message: "Category name  required." },
+        { message: "Category name and Client ID are required." },
         { status: 400 },
       );
     }
@@ -48,6 +48,7 @@ export async function POST(request) {
 
     const exists = await CategoryModel.findOne({
       categoryName: categoriesName.trim(),
+      createdBy: authUser.id,
     });
 
     if (exists) {
