@@ -17,7 +17,6 @@ export async function GET(request) {
 
     const userId = session?.user?.id;
 
-    console.log(userId)
 
     // 2. Extract pagination parameters from the URL
     const searchParams = request.nextUrl.searchParams;

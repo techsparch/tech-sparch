@@ -75,7 +75,6 @@ export async function GET(request) {
       );
     }
 
-    console.log(verifySession);
 
     const categories = await CategoryModel.find({})
       .sort({ createdAt: -1 })

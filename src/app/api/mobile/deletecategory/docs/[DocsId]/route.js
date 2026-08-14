@@ -13,7 +13,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     const { DocsId } = await params;
-    console.log(DocsId);
 
     if (!DocsId) {
       return NextResponse.json(

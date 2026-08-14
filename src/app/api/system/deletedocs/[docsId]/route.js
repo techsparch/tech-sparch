@@ -52,7 +52,6 @@ export async function DELETE(request, { params }) {
           resource_type: isRaw ? "raw" : "image",
         });
 
-        console.log(`Successfully deleted Cloudinary file: ${publicId}`);
       } catch (cleanupError) {
         console.error(
           `Failed to delete Cloudinary file ${publicId}:`,

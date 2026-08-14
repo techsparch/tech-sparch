@@ -31,7 +31,6 @@ export async function GET(request, { params }) {
       .select("+assignedCaId")
       .lean();
 
-    console.log(managerId.assignedCaId);
 
     if (!managerId || !managerId.assignedCaId) {
       return NextResponse.json(

@@ -7,7 +7,6 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    console.log("refreshing token")
 
     // 1. Extract from the Authorization header instead of the body
     const authHeader = request.headers.get("authorization");

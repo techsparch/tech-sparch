@@ -106,11 +106,7 @@ export async function POST(request, { params }) {
       categoryName: { $regex: new RegExp(`^${trimmedCategoryName}$`, "i") },
     });
 
-    console.log(
-      existingCategory,
-      "==",
-      "existingCategory that Mapped to client",
-    );
+  
 
     if (existingCategory) {
       return NextResponse.json(

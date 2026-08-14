@@ -149,7 +149,6 @@ export function AppSidebar({ items = [], onSignOut, userName, role }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  console.log(userName);
 
   return (
     <>

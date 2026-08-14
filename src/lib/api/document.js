@@ -124,11 +124,9 @@ export async function getDocumentsByCategoryForStaff(clientId, categoryId) {
     `/api/staff/client-files/${clientId}/${categoryId}`
   );
 
-  console.log("status:", res.status);
 
   const result = await res.json();
 
-  console.log("API Response:", result);
 
   if (!res.ok) {
     throw new Error(result.message || "Failed to fetch documents");

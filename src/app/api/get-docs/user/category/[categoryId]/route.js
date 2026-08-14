@@ -12,7 +12,6 @@ export async function GET(req, context) {
 
     const { categoryId } = await context.params;
 
-      console.log("categoryId:", categoryId);
 
     const session = await getServerSession(authOptions);
 

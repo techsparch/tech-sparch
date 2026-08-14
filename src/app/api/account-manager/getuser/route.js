@@ -35,7 +35,6 @@ export async function GET(request) {
       UserModel.countDocuments({ assignedCaId }),
     ]);
 
-    console.log(users)
 
     const checkSubscriptionStatus = await SubscriptionModel.find(users.id || users._id)
 

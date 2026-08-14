@@ -14,7 +14,6 @@ export async function POST(req) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    console.log(authUser);
 
     // 2. Parse request body sent from Razorpay checkout handler
     const body = await req.json();
