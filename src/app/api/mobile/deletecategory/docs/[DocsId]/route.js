@@ -1,3 +1,4 @@
+import { getUser } from "@/helper/auth/auth";
 import cloudinary from "@/lib/cloudinary/connection";
 import { connectDB } from "@/lib/dbconnection/db";
 import DocumentModel from "@/model/doc/doc.model";
@@ -11,7 +12,8 @@ export async function DELETE(request, { params }) {
     if (!authUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { DocsId } = await request.json();
+    const { DocsId } = await params
+    console.log(DocsId)
 
     if (!DocsId) {
       return NextResponse.json(
@@ -19,6 +21,7 @@ export async function DELETE(request, { params }) {
         { status: 400 },
       );
     }
+
 
     // 1. Find Document
     const Docs = await DocumentModel.findById(DocsId);
