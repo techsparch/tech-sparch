@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowLeft, Download, Inbox } from "lucide-react";
+import { ArrowLeft, Download, Inbox, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import UploadDocComp from "../documents/UploadDocComp";
+import { getSession } from "next-auth/react";
 
 const DocCards = ({
   categoryName,
@@ -13,13 +14,15 @@ const DocCards = ({
   handleOpenPreview,
   handleDownload,
   formatFileSize,
+  handleDelete, // <-- Added prop
+  isDeleting,   // <-- Added prop
 }) => {
   const router = useRouter();
+
 
   return (
     <div className="mx-auto w-full space-y-4 py-4 px-4 sm:px-0 font-sans gap-3">
       {/* Back navigation */}
-
       <button
         onClick={() => router.back()}
         className="group inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 cursor-pointer"
@@ -85,21 +88,17 @@ const DocCards = ({
               <div
                 key={doc._id}
                 onClick={() => handleOpenPreview(doc)}
-
-                className="group  relative flex h-56 w-full flex-col  overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer "
+                className="group relative flex h-56 w-full flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
               >
                 {/* --- TOP: COVER PREVIEW --- */}
-
                 <div className="relative h-32 w-full bg-[#0d4734] p-3.5 flex flex-col justify-end overflow-hidden">
                   {coverUrl ? (
-                    // import Image from 'next/image'; // Ensure this import is at the top of your file
-
                     <Image
-                      src={coverUrl} // Next.js optimizes external URLs via loaders or domain configuration if needed
+                      src={coverUrl}
                       alt="Document Cover"
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 33vw"
-                      className="object-cover object-top opacity-85 group-hover:scale-105 transition-transform duration-300" // Styling and visual fit classes directly on the component
+                      className="object-cover object-top opacity-85 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="relative z-10 text-left">
@@ -112,14 +111,13 @@ const DocCards = ({
                     </div>
                   )}
 
-                  {/* Internal Dark Gradient so white text stays readable */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                  {/* Floating Title overlay */}
                   <span className="relative z-10 text-xs font-bold text-white truncate drop-shadow-sm">
                     {doc.docName || doc.originalFileName}
                   </span>
                 </div>
+
                 {/* --- BOTTOM: WHATSAPP METADATA PILL --- */}
                 <div className="flex h-[70px] w-full shrink-0 items-center gap-2.5 bg-[#F0F2F5] px-3 border-t border-slate-100 transition-colors group-hover:bg-[#e9edef]">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E5252A] text-white shadow-2xs">
@@ -128,7 +126,7 @@ const DocCards = ({
                     </span>
                   </div>
 
-                  <div className="min-w-0 p-2 flex-1 text-left">
+                  <div className="min-w-0 flex-1 text-left">
                     <p className="truncate text-xs font-semibold text-slate-800 leading-snug">
                       {doc.originalFileName}
                     </p>
@@ -143,23 +141,40 @@ const DocCards = ({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) =>
-                      handleDownload && handleDownload(e, doc.fileUrl)
-                    }
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#008069] transition-colors hover:bg-black/5"
-                    title="Download original file"
-                  >
-                    <Download className="h-4 w-4" />
-                  </button>
+                  {/* Actions Container */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents preview modal from opening
+                        handleDownload && handleDownload(e, doc.fileUrl);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-[#008069] transition-colors hover:bg-black/5"
+                      title="Download original file"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents preview modal from opening
+                        handleDelete && handleDelete(doc._id);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete document"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       )}
-      {/* <UploadDocComp /> */}
     </div>
   );
 };

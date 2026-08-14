@@ -1,8 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Folder, Inbox, Plus } from "lucide-react";
-
+import { ChevronLeft, ChevronRight, Folder, Inbox, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Label } from "recharts";
+import { Label } from "recharts"; // Note: Usually imported from "@/components/ui/label" in shadcn
 import { Input } from "@/components/ui/input";
 import { useGetClientCategoriesForAccountManager } from "@/hooks/account-manager/categories";
 
@@ -26,9 +25,17 @@ const UserPage = () => {
     useGetClientCategoriesForAccountManager(id);
 
   const router = useRouter();
+  
+  // Create Category State
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Delete Category State
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [page, setPage] = useState(1);
   const totalCategories = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
@@ -73,14 +80,44 @@ const UserPage = () => {
 
       setCategoryName("");
       setOpen(false);
-
-      // Force React Query to fetch the new data instantly
       await refetch();
     } catch (error) {
       console.error(error);
       alert(error.message || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      // NOTE: Make sure this URL matches exactly where you put the DELETE route file
+      // Example: /api/account-manager/categories/[categoriesId]/route.js
+      const response = await fetch(`/api/account-manager/deletecategories/${categoryToDelete._id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // This will catch the 409 Conflict if documents still exist
+        alert(result.message || "Failed to delete category");
+        setIsDeleting(false);
+        setDeleteOpen(false);
+        return;
+      }
+
+      setDeleteOpen(false);
+      setCategoryToDelete(null);
+      await refetch();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Something went wrong while deleting.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -107,8 +144,22 @@ const UserPage = () => {
           <div
             key={category._id}
             onClick={() => handleOpenCategory(category._id)}
-            className="flex flex-col items-center justify-start cursor-pointer w-28 group"
+            // Added relative positioning here so we can absolute-position the trash button
+            className="relative flex flex-col items-center justify-start cursor-pointer w-28 group"
           >
+            {/* Delete Button (appears on hover) */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevents triggering handleOpenCategory
+                setCategoryToDelete(category);
+                setDeleteOpen(true);
+              }}
+              className="absolute -top-2 -right-2 p-1.5 bg-white border border-slate-200 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:border-red-100 z-10"
+              title="Delete Category"
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </button>
+
             <Folder
               className="h-20 w-20 text-sky-400 fill-sky-400 mb-2 group-hover:opacity-80 transition-opacity"
               strokeWidth={1}
@@ -137,7 +188,7 @@ const UserPage = () => {
           </div>
         )}
         {totalCategories > 30 && (
-          <div className="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">
+          <div className="flex items-center justify-between border-t border-slate-200 pt-4 mt-6 w-full">
             <p className="text-sm text-slate-500">
               Showing page {page} of {totalPages}
             </p>
@@ -163,17 +214,49 @@ const UserPage = () => {
             </div>
           </div>
         )}
-        <div className="border-b border-slate-200 pb-2"></div>
       </div>
+      <div className="border-b border-slate-200 pb-2"></div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Delete Category</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the category{" "}
+              <span className="font-semibold text-slate-900">
+                `{categoryToDelete?.categoryName}`
+              </span>
+              ?
+              <br />
+              <br />
+              This action cannot be undone. You can only delete empty categories.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="sm:justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Category"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* FIXED POSITION FLOATING ACTION BUTTON */}
       <div className="fixed bottom-8 right-8 z-50">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            {/* 
-              Made the button larger (h-14 w-14), perfectly round, added a shadow, 
-              and centered the Plus icon by removing the margin-right. 
-            */}
             <Button
               size="icon"
               className="h-14 w-14 rounded-full shadow-xl hover:shadow-2xl transition-all"

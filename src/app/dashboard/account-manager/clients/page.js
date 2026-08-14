@@ -8,6 +8,7 @@ const Systemuser = () => {
       <ShowAllUser
         api={"/api/account-manager/getuser"}
         apirole={"account-manager"}
+        showCodeApi ={"/api/account-manager/request-access-code"}
       ></ShowAllUser>
     </div>
   );

@@ -10,11 +10,11 @@ import {
   Inbox,
   Loader2,
   Plus,
+  Trash2, // ✅ Added Trash2 icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// ✅ FIXED: Imported Dialog from your local UI folder
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// ✅ FIXED: Imported Label from your local UI folder (assuming you have one, or just use HTML label)
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -33,14 +32,20 @@ import { useSession } from "next-auth/react";
 const ShowCategories = () => {
   const router = useRouter();
 
+  // Create Category States
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Delete Category States
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { data: session, status } = useSession();
   const id = session?.user?.id;
-  // ✅ FIXED: Extracted refetch from the hook
+  
   const { data, isLoading, isError, error, refetch } = useDocuments(page);
 
   const totalCategories = data?.pagination?.total || 0;
@@ -84,14 +89,45 @@ const ShowCategories = () => {
 
       setCategoryName("");
       setOpen(false);
-
-      // ✅ Now this will work properly!
+      toast.success("Category created successfully");
       await refetch();
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      // NOTE: Verify this API URL matches your actual DELETE route structure!
+      // Example: /api/account-manager/categories/[categoriesId]/route.js
+      const response = await fetch(`/api/client/deletecategories/${categoryToDelete._id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.message || "Failed to delete category");
+        setIsDeleting(false);
+        setDeleteOpen(false);
+        return;
+      }
+
+      toast.success("Category deleted successfully");
+      setDeleteOpen(false);
+      setCategoryToDelete(null);
+      await refetch();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Something went wrong while deleting.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -127,8 +163,22 @@ const ShowCategories = () => {
           <div
             key={category._id}
             onClick={() => handleOpenCategory(category._id)}
-            className="flex flex-col items-center justify-start cursor-pointer w-28 group"
+            // ✅ Made group relative so the trash icon can be absolute positioned
+            className="relative flex flex-col items-center justify-start cursor-pointer w-28 group"
           >
+            {/* ✅ Delete Button (appears on hover) */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevents navigating to the category
+                setCategoryToDelete(category);
+                setDeleteOpen(true);
+              }}
+              className="absolute -top-2 -right-2 p-1.5 bg-white border border-slate-200 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:border-red-100 z-10"
+              title="Delete Category"
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </button>
+
             <Folder
               className="h-20 w-20 text-sky-400 fill-sky-400 mb-2 group-hover:opacity-80 transition-opacity"
               strokeWidth={1}
@@ -186,6 +236,42 @@ const ShowCategories = () => {
         </div>
       )}
 
+      {/* ✅ Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Delete Category</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the category{" "}
+              <span className="font-semibold text-slate-900">
+                {categoryToDelete?.categoryName}
+              </span>
+              ?
+              <br />
+              <br />
+              This action cannot be undone. You can only delete empty categories.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="sm:justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Category"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* FIXED POSITION FLOATING ACTION BUTTON */}
       <div className="fixed bottom-8 right-8 z-50">
         <Dialog open={open} onOpenChange={setOpen}>
@@ -207,7 +293,6 @@ const ShowCategories = () => {
             </DialogHeader>
 
             <div className="space-y-2 py-4">
-              {/* Ensure htmlFor and id match exactly */}
               <Label htmlFor="categoryName">Category Name</Label>
               <Input
                 id="categoryName"

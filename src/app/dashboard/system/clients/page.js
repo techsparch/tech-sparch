@@ -8,6 +8,7 @@ const Systemuser = () => {
       <ShowAllUser
         api={"/api/system/getalluser"}
         apirole={"system"}
+        showCodeApi ={"/api/system/request-access-code"}
       ></ShowAllUser>
     </div>
   );

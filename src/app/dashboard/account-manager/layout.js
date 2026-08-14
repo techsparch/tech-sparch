@@ -45,7 +45,6 @@ export default function DashboardLayout({ children }) {
     { title: "Staff", url: "/dashboard/account-manager/staff", icon: UserCog },
 
     { title: "Tasks", url: "/dashboard/account-manager/task", icon: CheckSquare },
-    { title: "Settings", url: "/dashboard/settings", icon: Settings },
   ];
 
   const handleSignOut = () => {
@@ -77,7 +76,7 @@ export default function DashboardLayout({ children }) {
         />
 
         <SidebarInset>
-          <main className="p-6">{children}</main>
+          <main className="p-6 mt-12 md:mt-1 lg:mt1 xl:mt1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

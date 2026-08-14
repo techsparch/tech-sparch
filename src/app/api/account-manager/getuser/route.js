@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/dbconnection/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/option";
 import UserModel from "@/model/user/user.model";
+import SubscriptionModel from "@/model/payment/subscription.model";
 
 export async function GET(request) {
   try {
@@ -34,6 +35,12 @@ export async function GET(request) {
       UserModel.countDocuments({ assignedCaId }),
     ]);
 
+    console.log(users)
+
+    const checkSubscriptionStatus = await SubscriptionModel.find(users.id || users._id)
+
+
+
     return NextResponse.json(
       {
         success: true,
@@ -42,6 +49,7 @@ export async function GET(request) {
         currentPage: page,
         totalPages: Math.ceil(totalClients / limit),
         limit,
+        checkSubscriptionStatus
       },
       { status: 200 },
     );

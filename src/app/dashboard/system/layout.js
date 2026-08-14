@@ -47,9 +47,7 @@ export default function DashboardLayout({ children }) {
     { title: "account Manager", url: "/dashboard/system/account-manager", icon: UserLock },
 
     { title: "Usages", url: "/dashboard/system/usage", icon: FileText },
-    { title: "Tasks", url: "/dashboard/system/tasks", icon: CheckSquare },
-
-    { title: "Settings", url: "/dashboard/system/settings", icon: Settings },
+  
   ];
 
 
@@ -64,7 +62,7 @@ export default function DashboardLayout({ children }) {
         <AppSidebar items={items} onSignOut={handleSignOut} userName={session?.user?.name} role={session?.user?.role}/>
 
         <SidebarInset>
-          <main className="p-6">{children}</main>
+          <main className="p-6 mt-12 md:mt-1 lg:mt1 xl:mt1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

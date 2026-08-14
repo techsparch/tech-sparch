@@ -36,11 +36,6 @@ const items = [
     url: "/dashboard/client/profile",
     icon: User,
   },
-  {
-    title: "Support",
-    url: "/user/support",
-    icon: Headset,
-  },
 
   {
     title: "Payments",
@@ -48,10 +43,11 @@ const items = [
     icon: CreditCard,
   },
   {
-    title: "Settings",
-    url: "/user/settings",
-    icon: Settings,
+    title: "Support",
+    url: "/dashboard/client/support",
+    icon: Headset,
   },
+
 ];
 
 const handleSignOut = () => {
@@ -102,10 +98,10 @@ export default function DashboardLayout({ children }) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar items={items} onSignOut={handleSignOut} />
+        <AppSidebar items={items} onSignOut={handleSignOut} userName={session?.user?.name} role={session?.user?.role} />
 
         <SidebarInset>
-          <main className="p-6">{children}</main>
+          <main className="p-6 mt-12 md:mt-1 lg:mt1 xl:mt1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
