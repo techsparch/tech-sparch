@@ -14,20 +14,20 @@ export async function POST(request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+
     // 1. Correctly parse the JSON body
     const { categoriesName } = await request.json();
 
     // 2. Validate input and return a 400 status if missing
     if (!categoriesName) {
       return NextResponse.json(
-        { message: "Category name and Client ID are required." },
+        { message: "Category name  required." },
         { status: 400 },
       );
     }
 
-    // 6. Check Active Subscription (Updated to include gracePeriod)
     const checkUserSubscribe = await SubscriptionModel.findOne({
-      userId: clientId,
+      userId: authUser.id,
     });
 
     // Define allowed statuses
@@ -48,7 +48,6 @@ export async function POST(request) {
 
     const exists = await CategoryModel.findOne({
       categoryName: categoriesName.trim(),
-      createdBy: authUser.id,
     });
 
     if (exists) {
