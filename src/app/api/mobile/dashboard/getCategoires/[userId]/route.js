@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/dbconnection/db";
 import { NextResponse } from "next/server";
 import CategoryModel from "@/model/category/category.model";
 import { getUser } from "@/helper/auth/auth";
+import UserModel from "@/model/user/user.model";
 
 export async function GET(request, { params }) {
   try {
@@ -42,6 +43,19 @@ export async function GET(request, { params }) {
 
     const skip = (page - 1) * limit;
 
+    const dbUser = await UserModel.findById(authUser.id)
+      .select("+isActive")
+      .lean();
+
+    if (!dbUser || dbUser.isActive === false) {
+      return NextResponse.json(
+        {
+          message: "Your account is currently inactive. Please contact support.",
+          categories: [],
+        },
+        { status: 200 },
+      );
+    }
     // --- 2. RUN QUERIES CONCURRENTLY ---
     // Promise.all runs both database calls at the same time for maximum speed
     const [categories, totalCategories] = await Promise.all([
@@ -75,3 +89,4 @@ export async function GET(request, { params }) {
     );
   }
 }
+

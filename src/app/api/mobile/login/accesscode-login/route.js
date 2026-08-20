@@ -23,6 +23,8 @@ export async function POST(request) {
       );
     }
 
+
+
     const trimmedCode = accessCode.trim().toUpperCase();
 
     // Must match TS-XXXX format (fixed prefix + uppercase alphanumeric)
@@ -57,3 +59,6 @@ export async function POST(request) {
     return NextResponse.json({ msg: "Internal server error" }, { status: 500 });
   }
 }
+
+
+"/src/app/api/mobile/dashboard/getCategoires"

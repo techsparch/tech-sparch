@@ -9,45 +9,30 @@ export async function GET(request) {
   try {
     await connectDB();
 
+
+
     const verifySession = await getServerSession(authOptions);
 
-    if (!verifySession || verifySession.user.role !== "ca") {
+    if (!verifySession || verifySession.user.role !== "system") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-
-    const page = Math.max(parseInt(searchParams.get("page")) || 1, 1);
-    const limit = Math.max(parseInt(searchParams.get("limit")) || 9, 1);
-
-    const skip = (page - 1) * limit;
-
-    const assignedCaId = verifySession.user.id;
-
     const [users, totalClients] = await Promise.all([
-      UserModel.find({ assignedCaId, role: "client" })
+      UserModel.find({ assignedCaId: verifySession.user.id, role: "client" })
         .populate("assignedCaId", "name")
-        .select("-password -__v")
+        .select(
+          "name mobile email isActive  shopName businessType gstNumber panNumber address role createdAt",
+        )
         .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-
-      UserModel.countDocuments({ assignedCaId }),
+        .limit(500),
+      UserModel.countDocuments({ assignedCaId: verifySession.user.id }),
     ]);
-
-    const checkSubscriptionStatus = await SubscriptionModel.find(
-      users.id || users._id,
-    );
 
     return NextResponse.json(
       {
         success: true,
         data: users,
         totalUsers: totalClients,
-        currentPage: page,
-        totalPages: Math.ceil(totalClients / limit),
-        limit,
-        checkSubscriptionStatus,
       },
       { status: 200 },
     );

@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/option";
 import CategoryModel from "@/model/category/category.model";
 import SubscriptionModel from "@/model/payment/subscription.model";
+import UserModel from "@/model/user/user.model";
 
 export async function GET(request, { params }) {
   try {
@@ -23,6 +24,21 @@ export async function GET(request, { params }) {
     if (isNaN(page) || page < 1) page = 1;
 
     const skip = (page - 1) * limit;
+
+    // Fetch the user object
+    const user = await UserModel.findById(id).select("isActive").lean();
+
+    // Check if user doesn't exist OR is explicitly deactivated
+    if (user.isActive === false) {
+      return NextResponse.json(
+        {
+          message: "Account De-Activated or User Not Found",
+          deActivationStatus: 100,
+          categories: [],
+        },
+        { status: 200 }, // 403 Forbidden is usually better for deactivated accounts
+      );
+    }
 
     const [categories, totalCategories] = await Promise.all([
       // 2. FIXED: You were using 'userId' here, but it wasn't defined.

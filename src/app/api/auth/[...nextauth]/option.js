@@ -28,8 +28,11 @@ export const authOptions = {
         }).select("+password");
 
         if (!user) throw new Error("User not found");
-        if (!user.isActive) throw new Error("Account is disabled");
-
+        if (user.isActive === false) {
+          throw new Error(
+            "Your account is currently inactive. Please contact support.",
+          );
+        }
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           user.password,
@@ -85,10 +88,11 @@ export const authOptions = {
           throw new Error("Invalid access code");
         }
 
-        if (!user.isActive) {
-          throw new Error("Account is disabled");
+        if (user.isActive === false) {
+          throw new Error(
+            "Your account is currently inactive. Please contact support.",
+          );
         }
-
         // Fetch subscription status for clients
         const subscription = await SubscriptionModel.findOne({
           userId: user._id,

@@ -44,10 +44,9 @@ export default function DashboardLayout({ children }) {
   const items = [
     { title: "Dashboard", url: "/dashboard/system", icon: LayoutDashboard },
     { title: "Clients", url: "/dashboard/system/clients", icon: Users },
-    { title: "account Manager", url: "/dashboard/system/account-manager", icon: UserLock },
+    { title: "Account Manager", url: "/dashboard/system/account-manager", icon: UserLock },
 
     { title: "Usages", url: "/dashboard/system/usage", icon: FileText },
-  
   ];
 
 

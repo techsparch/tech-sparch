@@ -18,7 +18,6 @@ export async function GET(request) {
         { status: 401 },
       );
     }
-
     const user = await UserModel.findById(currentUser.id)
       .select("-password")
       .populate("assignedCaId", "name")

@@ -7,8 +7,38 @@ import SubscriptionModel from "@/model/payment/subscription.model";
 import { signAccessToken, signRefreshToken } from "@/helper/jwt/jwt";
 
 const CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const MAX_GENERATION_RETRIES = 10;
 
-function createCode(length = 4) {
+/**
+ * Create registration code
+ * Example: REG-ABCD34
+ */
+function createRegistrationCode(length = 6) {
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += CHARACTERS[crypto.randomInt(CHARACTERS.length)];
+  }
+  return `REG-${code}`;
+}
+
+/**
+ * Generate a unique registration code with a retry limit
+ */
+async function generateUniqueRegistrationCode() {
+  let attempts = 0;
+  while (attempts < MAX_GENERATION_RETRIES) {
+    const registrationId = createRegistrationCode();
+    const exists = await UserModel.exists({ newRegId: registrationId });
+    if (!exists) return registrationId;
+    attempts++;
+  }
+  throw new Error("Failed to generate a unique registration code.");
+}
+
+/**
+ * Create login access code
+ */
+function createAccessCode(length = 4) {
   let code = "";
   for (let i = 0; i < length; i++) {
     code += CHARACTERS[crypto.randomInt(CHARACTERS.length)];
@@ -16,85 +46,104 @@ function createCode(length = 4) {
   return `TS-${code}`;
 }
 
-export async function generateUniqueAccessCode() {
-  while (true) {
-    const code = createCode();
-    const exists = await UserModel.exists({ loginWithAccessCode: code });
-    if (!exists) return code;
+/**
+ * Generate unique login access code with a retry limit
+ */
+async function generateUniqueAccessCode() {
+  let attempts = 0;
+  while (attempts < MAX_GENERATION_RETRIES) {
+    const accessCode = createAccessCode();
+    const exists = await UserModel.exists({ accessCode });
+    if (!exists) return accessCode;
+    attempts++;
   }
+  throw new Error("Failed to generate a unique access code.");
 }
 
 export async function POST(req) {
   try {
-    // 1. Parse and validate input BEFORE hitting the database
     const { name, mobile, password, email, shopName } = await req.json();
 
+    // Basic validation
     if (!mobile || !password) {
       return NextResponse.json(
         { error: "All required fields must be filled" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { error: "Password must be at least 6 characters" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    // 2. Connect to DB only after all basic validations pass
     await connectDB();
 
-    // 3. Use .exists() instead of .findOne() for a lighter query
+    // Check existing user
     const existingUser = await UserModel.exists({ mobile });
-
     if (existingUser) {
       return NextResponse.json(
         { error: "User already exists" },
-        { status: 400 },
+        { status: 409 } // 409 Conflict is more semantically correct than 400
       );
     }
 
-    // 4. Run time-consuming tasks concurrently
-    const [hashedPassword, accessCode] = await Promise.all([
+    // Generate everything concurrently
+   // Generate everything concurrently
+    const [hashedPassword, accessCode, registrationId] = await Promise.all([
       bcrypt.hash(password, 10),
       generateUniqueAccessCode(),
+      generateUniqueRegistrationCode(),
     ]);
-
-    // 5. Create the user
     const newUser = await UserModel.create({
       name,
       mobile,
       password: hashedPassword,
       email,
       role: "client",
-      assignedCaId: "6a30efe705c4bf113d367c7d",
+      assignedCaId: "6a804c29adf0aa38239f4cba",
+      newRegId: registrationId,
       accessCode,
       shopName,
     });
 
-    // 6. Fix: Use `newUser` instead of `user`
-    const subscription = await SubscriptionModel.findOne({ userId: newUser._id });
+    const subscription = await SubscriptionModel.findOne({
+      userId: newUser._id,
+    });
 
+    // Generate tokens
     const accessToken = signAccessToken(newUser);
     const refreshToken = signRefreshToken(newUser);
 
-    return NextResponse.json({
-      accessToken,
-      refreshToken,
-      user: {
-        id: newUser._id,
-        role: newUser.role,
-        name: newUser.name,
-        subscription: subscription?.serviceEnabled || false,
+    return NextResponse.json(
+      {
+        accessToken,
+        refreshToken,
+        user: {
+          id: newUser._id,
+          role: newUser.role,
+          name: newUser.name,
+          registrationId: newUser.newRegId,
+          subscription: subscription?.serviceEnabled || false,
+        },
       },
-    }, { status: 201 }); // Added status 201 Created
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Register Error:", error);
+    
+    // Catch Mongoose unique constraint errors (code 11000)
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: "Duplicate field detected (e.g., mobile number already in use)." },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

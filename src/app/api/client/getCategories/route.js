@@ -3,6 +3,7 @@ import CategoryModel from "@/model/category/category.model";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/option";
+import UserModel from "@/model/user/user.model";
 
 export async function GET(request, { params }) {
   try {
@@ -23,6 +24,21 @@ export async function GET(request, { params }) {
 
     if (isNaN(limit) || limit < 1) limit = 20;
     if (isNaN(page) || page < 1) page = 1;
+
+      // Fetch the user object
+    const user = await UserModel.findById(id).select("isActive").lean();
+
+    // Check if user doesn't exist OR is explicitly deactivated
+    if (user.isActive === false) {
+      return NextResponse.json(
+        {
+          message: "Account De-Activated or User Not Found",
+          deActivationStatus: 100,
+          categories: [],
+        },
+        { status: 200 }, // 403 Forbidden is usually better for deactivated accounts
+      );
+    }
 
     const skip = (page - 1) * limit;
 

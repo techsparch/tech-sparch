@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/dbconnection/db";
 import DocumentModel from "@/model/doc/doc.model";
+import UserModel from "@/model/user/user.model";
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/option";
 import CategoryModel from "@/model/category/category.model";
@@ -10,10 +12,10 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    // 1. You extracted the parameter as 'id'
-    const { id } = await params;
 
+    const { id } = await params;
     const searchParams = request.nextUrl.searchParams;
+
 
     let limit = parseInt(searchParams.get("limit") || "20", 10);
     let page = parseInt(searchParams.get("page") || "1", 10);
@@ -23,20 +25,29 @@ export async function GET(request, { params }) {
 
     const skip = (page - 1) * limit;
 
+    // Fetch the user object
+    const user = await UserModel.findById(id).select("isActive");
+
+    // Check if user doesn't exist OR is explicitly deactivated
+    if ( user.isActive === false) {
+      return NextResponse.json(
+        {
+          message: "Account De-Activated or User Not Found",
+          deActivationStatus: 100,
+          categories: [],
+        },
+        { status: 200 }, // 403 Forbidden is usually better for deactivated accounts
+      );
+    }
     const [categories, totalCategories] = await Promise.all([
-      // 2. FIXED: You were using 'userId' here, but it wasn't defined.
-      // Changed it to use the 'id' you extracted from params above.
       CategoryModel.find({ clientId: id })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-
-      // FIXED: Changed 'userId' to 'id' here too
       CategoryModel.countDocuments({ clientId: id }),
     ]);
 
-    // 3. Combined your two return statements into one
     return NextResponse.json(
       {
         success: true,
@@ -50,18 +61,13 @@ export async function GET(request, { params }) {
       },
       { status: 200 },
     );
-    
   } catch (error) {
     return NextResponse.json(
-      {
-        success: false,
-        message: error.message,
-      },
+      { success: false, message: error.message },
       { status: 500 },
     );
   }
 }
-
 export async function POST(request, { params }) {
   try {
     // 1. Fail fast: Check authentication BEFORE DB connection and JSON parsing
@@ -105,8 +111,6 @@ export async function POST(request, { params }) {
       clientId,
       categoryName: { $regex: new RegExp(`^${trimmedCategoryName}$`, "i") },
     });
-
-  
 
     if (existingCategory) {
       return NextResponse.json(

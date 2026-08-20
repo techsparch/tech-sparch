@@ -24,6 +24,9 @@ const UserPage = () => {
   const { data, isLoading, error, refetch } =
     useGetClientCategoriesForAccountManager(id);
 
+      const isDeactivated = data?.deActivationStatus === 100;
+
+
   const router = useRouter();
   
   // Create Category State
@@ -259,6 +262,7 @@ const UserPage = () => {
           <DialogTrigger asChild>
             <Button
               size="icon"
+               disabled={isDeactivated}
               className="h-14 w-14 rounded-full shadow-xl hover:shadow-2xl transition-all"
             >
               <Plus className="h-6 w-6" />

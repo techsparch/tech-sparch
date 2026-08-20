@@ -15,7 +15,6 @@ const Page = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // ✅ ONLY store raw input (no formatting here)
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -55,12 +54,22 @@ const Page = () => {
     setLoading(true);
 
     try {
-      await signIn("credentials", {
-        redirect: true,
-        callbackUrl: "/dashboard",
+      // 1. Change redirect to false and capture the response
+      const res = await signIn("credentials", {
+        redirect: false, 
         mobile: unformatMobile(form.mobile),
         password: form.password,
       });
+
+      // 2. Check for errors from your authorize function
+      if (res?.error) {
+        toast.error(res.error); // Displays "User not found", "Invalid password", etc.
+      } else if (res?.ok) {
+        // 3. Handle success
+        toast.success("Login successful!");
+        router.push("/dashboard");
+        router.refresh(); // Refreshes layout to get the new session state
+      }
     } catch (error) {
       toast.error("Something went wrong");
     } finally {

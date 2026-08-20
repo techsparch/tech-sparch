@@ -12,7 +12,8 @@ import {
   Settings,
   UserCog,
   Users,
-  Loader2, // ✅ Added for the loading state
+  Loader2,
+  UserPlus, // ✅ Added for the loading state
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -43,8 +44,16 @@ export default function DashboardLayout({ children }) {
       icon: Users,
     },
     { title: "Staff", url: "/dashboard/account-manager/staff", icon: UserCog },
-
-    { title: "Tasks", url: "/dashboard/account-manager/task", icon: CheckSquare },
+    {
+      title: "Register Client",
+      url: "/dashboard/account-manager/reg_clients",
+      icon: UserPlus,
+    },
+    {
+      title: "Tasks",
+      url: "/dashboard/account-manager/task",
+      icon: CheckSquare,
+    },
   ];
 
   const handleSignOut = () => {

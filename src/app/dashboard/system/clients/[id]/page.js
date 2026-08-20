@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { toast, Toaster } from "sonner";
 
 const UserPage = () => {
   const { id } = useParams();
@@ -30,6 +31,7 @@ const UserPage = () => {
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useGetClientCategoriesForSystem(id, page);
+  const isDeactivated = data?.deActivationStatus === 100;
 
   const handleOpenCategory = (categoryId) => {
     router.push(`/dashboard/system/clients/${id}/category/${categoryId}`);
@@ -171,13 +173,17 @@ const UserPage = () => {
       <div className="fixed bottom-8 right-8 z-50">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            {/* 
-              Made the button larger (h-14 w-14), perfectly round, added a shadow, 
-              and centered the Plus icon by removing the margin-right. 
-            */}
             <Button
               size="icon"
-              className="h-14 w-14 rounded-full shadow-xl hover:shadow-2xl transition-all"
+              disabled={isDeactivated} // Disables the button and prevents dialog from opening
+              title={
+                isDeactivated ? "Account is deactivated" : "Add New Category"
+              }
+              className={`h-14 w-14 rounded-full shadow-xl transition-all ${
+                isDeactivated
+                  ? "bg-slate-400 opacity-70 cursor-not-allowed" // Disabled styles
+                  : "hover:shadow-2xl" // Active styles
+              }`}
             >
               <Plus className="h-6 w-6" />
             </Button>

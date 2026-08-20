@@ -2,6 +2,7 @@ import { getUser } from "@/helper/auth/auth";
 import { connectDB } from "@/lib/dbconnection/db";
 import CategoryModel from "@/model/category/category.model";
 import SubscriptionModel from "@/model/payment/subscription.model";
+import UserModel from "@/model/user/user.model";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
@@ -14,7 +15,6 @@ export async function POST(request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-
     // 1. Correctly parse the JSON body
     const { categoriesName } = await request.json();
 
@@ -25,6 +25,23 @@ export async function POST(request) {
         { status: 400 },
       );
     }
+
+    const dbUser = await UserModel.findById(authUser.id)
+      .select("+isActive")
+      .lean();
+
+    if (!dbUser || dbUser.isActive === false) {
+      return NextResponse.json(
+        {
+          message:
+            "Your account is currently inactive. Please contact support.",
+          categories: [],
+        },
+        { status: 200 },
+      );
+    }
+
+   
 
     const checkUserSubscribe = await SubscriptionModel.findOne({
       userId: authUser.id,
