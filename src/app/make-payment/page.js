@@ -52,14 +52,21 @@ export default function MakePaymentPage() {
       }
 
       // 3. Initialize Razorpay Checkout
+      const referenceId = createData.subscriptionId;
+      
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        subscription_id: createData.subscriptionId, // Strictly using subscription_id
+        
+        // Tells Razorpay what we are paying for
+        ...(referenceId?.startsWith("order_") 
+            ? { order_id: referenceId } 
+            : { subscription_id: referenceId }),
+            
         name: "Tech Sparch Saksham Solution",
         description: `${planType === "monthly" ? "Monthly" : "Yearly"} Service Subscription`,
         handler: async function (response) {
           try {
-            console.log("Razorpay Response:", response);
+            console.log("Razorpay Live Response:", response);
        
             // 4. Verify payment signature on your backend
             const verifyRes = await fetch("/api/subscription/verify", {
@@ -67,7 +74,9 @@ export default function MakePaymentPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_subscription_id: response.razorpay_subscription_id,
+                razorpay_order_id: response.razorpay_order_id || "", 
+                razorpay_subscription_id: response.razorpay_subscription_id || "",
+                original_subscription_id: referenceId, // MUST send this for DB lookup
                 razorpay_signature: response.razorpay_signature,
               }),
             });
@@ -90,7 +99,7 @@ export default function MakePaymentPage() {
           }
         },
         theme: {
-          color: "#2563eb", // Matches your blue-600 button
+          color: "#2563eb", 
         },
       };
 
