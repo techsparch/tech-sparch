@@ -20,13 +20,11 @@ export async function POST(req) {
     const body = await req.json();
     const { 
       razorpay_payment_id, 
-      razorpay_subscription_id, 
       razorpay_order_id, 
-      original_subscription_id, // Sent directly from the frontend
+      original_subscription_id, 
       razorpay_signature 
     } = body;
 
-    // Reject if missing core requirements
     if (!razorpay_payment_id || !razorpay_signature || !original_subscription_id) {
       return NextResponse.json(
         { success: false, message: "Missing required payment parameters." },
@@ -35,39 +33,38 @@ export async function POST(req) {
     }
 
     // ==========================================
-    // 3. VERIFY SIGNATURE (MATH ONLY)
+    // 3. VERIFY SIGNATURE (THE "TRY BOTH" METHOD)
     // ==========================================
-    let textToVerify;
-    if (razorpay_order_id) {
-      // Razorpay sent an order_id (Live Mode authentication mandate)
-      textToVerify = `${razorpay_order_id}|${razorpay_payment_id}`;
-    } else if (razorpay_subscription_id) {
-      // Razorpay sent a subscription_id (Standard/Test Mode)
-      textToVerify = `${razorpay_payment_id}|${razorpay_subscription_id}`;
-    } else {
-      return NextResponse.json(
-        { success: false, message: "Missing Razorpay reference IDs." },
-        { status: 400 }
-      );
-    }
-    
-    // Hash and compare
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(textToVerify)
-      .digest("hex");
+    // Razorpay Live mode has a quirk where subscription mandates generate an order ID.
+    // We will hash both the Order formula AND the Subscription formula. 
+    // If EITHER matches, the payment is fully verified.
 
-    if (generatedSignature !== razorpay_signature) {
+    const generateHash = (text) => 
+      crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(text).digest("hex");
+
+    // Formula A: The Order Format
+    const orderHash = razorpay_order_id 
+      ? generateHash(`${razorpay_order_id}|${razorpay_payment_id}`) 
+      : null;
+
+    // Formula B: The Subscription Format (Using the original ID we saved)
+    const subHash = generateHash(`${razorpay_payment_id}|${original_subscription_id}`);
+
+    // Check if the signature matches either formula
+    const isValidSignature = (razorpay_signature === orderHash) || (razorpay_signature === subHash);
+
+    console.log(isValidSignature)
+    if (!isValidSignature) {
+      console.error("Signature Mismatch. Expected:", { orderHash, subHash }, "Received:", razorpay_signature);
       return NextResponse.json(
-        { success: false, message: "Invalid payment signature." },
-        { status: 400 }
+        { success: false, message: "Invalid payment signature. Verification failed." },
+        { status: 400 } // This is the 400 error you just saw!
       );
     }
 
     // ==========================================
     // 4. UPDATE EXACT DATABASE RECORD
     // ==========================================
-    // Look up the exact record using the original ID generated during creation
     const subscription = await SubscriptionModel.findOne({
       razorpaySubscriptionId: original_subscription_id, 
       userId: session.user.id,
@@ -84,7 +81,6 @@ export async function POST(req) {
     if (subscription.status === "created") {
       subscription.status = "authenticated";
       
-      // Store the final Razorpay IDs for your records (useful for debugging)
       subscription.razorpayPaymentId = razorpay_payment_id;
       if (razorpay_order_id) subscription.razorpayOrderId = razorpay_order_id;
       
