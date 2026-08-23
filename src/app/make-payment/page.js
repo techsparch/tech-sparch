@@ -54,7 +54,7 @@ export default function MakePaymentPage() {
         },
         body: JSON.stringify({ planType }),
       });
-      
+
       const createData = await createRes.json();
       console.log("[API Response] Create Subscription:", {
         status: createRes.status,
@@ -63,24 +63,25 @@ export default function MakePaymentPage() {
       });
 
       if (!createRes.ok) {
-        throw new Error(createData.message || "Failed to create payment record");
+        throw new Error(
+          createData.message || "Failed to create payment record",
+        );
       }
 
       // 3. Initialize Razorpay Checkout
       const referenceId = createData.subscriptionId; // Use the ID returned from your backend
-      
+
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        // Smart mapping: check if the backend generated an Order or a Subscription
-        ...(referenceId?.startsWith("order_") 
-            ? { order_id: referenceId } 
-            : { subscription_id: referenceId }),
+        ...(referenceId?.startsWith("order_")
+          ? { order_id: referenceId }
+          : { subscription_id: referenceId }),
         name: "SP Consultancy",
         description: `${planType === "monthly" ? "Monthly" : "Yearly"} Service Subscription`,
         handler: async function (response) {
           console.log("\n--- [Razorpay Handler] Payment Authorized ---");
           console.log("[Razorpay Handler] Response received:", response);
-          
+
           try {
             // 4. Verify payment signature on your backend
             // UPDATE: Pass both order_id and subscription_id to cover both cases
@@ -90,8 +91,11 @@ export default function MakePaymentPage() {
               razorpay_subscription_id: response.razorpay_subscription_id, // Captures sub_...
               razorpay_signature: response.razorpay_signature,
             };
-            
-            console.log("[API Call] Verifying payment with payload:", verificationPayload);
+
+            console.log(
+              "[API Call] Verifying payment with payload:",
+              verificationPayload,
+            );
 
             const verifyRes = await fetch("/api/subscription/verify", {
               method: "POST",
@@ -113,14 +117,19 @@ export default function MakePaymentPage() {
             toast.success("Payment successful! Redirecting...");
 
             // 5. Update NextAuth session
-            console.log("[NextAuth] Updating session (serviceEnabled: true)...");
+            console.log(
+              "[NextAuth] Updating session (serviceEnabled: true)...",
+            );
             await update({ serviceEnabled: true });
-            
+
             console.log("[Router] Redirecting to /dashboard/client...");
             router.push("/dashboard/client");
             router.refresh();
           } catch (err) {
-            console.error("[Razorpay Handler] Error during verification or session update:", err);
+            console.error(
+              "[Razorpay Handler] Error during verification or session update:",
+              err,
+            );
             toast.error(err.message || "Payment verification failed");
           }
         },
@@ -144,7 +153,6 @@ export default function MakePaymentPage() {
 
       console.log("[Razorpay] Opening checkout modal...");
       rzp.open();
-
     } catch (error) {
       console.error("\n--- [handlePayment] Error Caught ---");
       console.error("[handlePayment] Details:", error);
