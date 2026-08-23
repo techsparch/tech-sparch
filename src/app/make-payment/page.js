@@ -45,7 +45,7 @@ export default function MakePaymentPage() {
         throw new Error("Razorpay SDK failed to load. Are you online?");
       }
 
-      // 2. Create the subscription on your backend
+      // 2. Create the subscription/order on your backend
       console.log(`[API Call] Creating subscription for: ${planType}`);
       const createRes = await fetch("/api/subscription/create", {
         method: "POST",
@@ -63,14 +63,18 @@ export default function MakePaymentPage() {
       });
 
       if (!createRes.ok) {
-        throw new Error(createData.message || "Failed to create subscription");
+        throw new Error(createData.message || "Failed to create payment record");
       }
 
-      
       // 3. Initialize Razorpay Checkout
+      const referenceId = createData.subscriptionId; // Use the ID returned from your backend
+      
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        subscription_id: createData.subscriptionId,
+        // Smart mapping: check if the backend generated an Order or a Subscription
+        ...(referenceId?.startsWith("order_") 
+            ? { order_id: referenceId } 
+            : { subscription_id: referenceId }),
         name: "SP Consultancy",
         description: `${planType === "monthly" ? "Monthly" : "Yearly"} Service Subscription`,
         handler: async function (response) {
@@ -79,11 +83,14 @@ export default function MakePaymentPage() {
           
           try {
             // 4. Verify payment signature on your backend
+            // UPDATE: Pass both order_id and subscription_id to cover both cases
             const verificationPayload = {
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_order_id: response.razorpay_order_id, // Captures order_...
+              razorpay_subscription_id: response.razorpay_subscription_id, // Captures sub_...
               razorpay_signature: response.razorpay_signature,
             };
+            
             console.log("[API Call] Verifying payment with payload:", verificationPayload);
 
             const verifyRes = await fetch("/api/subscription/verify", {
