@@ -465,7 +465,7 @@ const ShowAllUser = ({
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             All Users
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-sm text-slate-500 mt-0.5 capitalize">
             View and manage all registered accounts.
           </p>
         </div>
@@ -727,7 +727,7 @@ const ShowAllUser = ({
               confirm.
             </p>
             <Input
-              placeholder="Type exact name..."
+              placeholder="Type Exact Name..."
               value={deactivateModal.typedName}
               onChange={(e) =>
                 setDeactivateModal((prev) => ({

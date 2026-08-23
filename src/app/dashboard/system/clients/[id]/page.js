@@ -114,7 +114,7 @@ const UserPage = () => {
                 className="h-20 w-20 text-sky-400 fill-sky-400 mb-2 group-hover:opacity-80 transition-opacity"
                 strokeWidth={1}
               />
-              <h3 className="text-sm font-medium text-center line-clamp-1 text-slate-800">
+              <h3 className="text-sm font-medium text-center line-clamp-1 text-slate-800 capitalize">
                 {category.categoryName}
               </h3>
               <p className="text-xs text-slate-500 font-medium">
@@ -192,8 +192,8 @@ const UserPage = () => {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Category</DialogTitle>
-              <DialogDescription>
-                Create a new document category for this client.
+              <DialogDescription  >
+                Create A New Document Category For This Client.
               </DialogDescription>
             </DialogHeader>
 

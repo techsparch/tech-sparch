@@ -24,7 +24,7 @@ export async function GET(request) {
 
     const assignedCaId = verifySession.user.id;
 
-    const [users, totalClients] = await Promise.all([
+    const [users, totalClients, activeClients] = await Promise.all([
       UserModel.find({ assignedCaId, role: "client" })
         .populate("assignedCaId", "name")
         .select("-password -__v")
@@ -32,12 +32,17 @@ export async function GET(request) {
         .skip(skip)
         .limit(limit),
 
-      UserModel.countDocuments({ assignedCaId }),
+      UserModel.countDocuments({ assignedCaId, role: "client" }),
+      UserModel.countDocuments({
+        assignedCaId,
+        role: "client",
+        isActive: true,
+      }),
     ]);
 
-    const checkSubscriptionStatus = await SubscriptionModel.find(
-      users.id || users._id,
-    );
+    // const checkSubscriptionStatus = await SubscriptionModel.find(
+    //   users.id || users._id,
+    // );
 
     return NextResponse.json(
       {
@@ -47,7 +52,8 @@ export async function GET(request) {
         currentPage: page,
         totalPages: Math.ceil(totalClients / limit),
         limit,
-        checkSubscriptionStatus,
+        // checkSubscriptionStatus,
+        activeClients,
       },
       { status: 200 },
     );

@@ -20,6 +20,7 @@ const AccountManagerDashboard = () => {
   const {
     data = {
       totalUsers: 0,
+
       roleCounts: [],
       recentClients: [],
     },
@@ -66,7 +67,7 @@ const AccountManagerDashboard = () => {
         <h1 className="text-2xl font-bold tracking-tight antialiased">
           Dashboard
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 capitalize">
           Manage firm accounts, data and access control
         </p>
       </div>
@@ -93,7 +94,7 @@ const AccountManagerDashboard = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
-                <p className="text-2xl font-bold">{data.totalUsers}</p>
+                <p className="text-2xl font-bold">{data.activeClients}</p>
               )}
             </div>
             <ShieldCheck className="h-6 w-6 text-green-600" />
@@ -158,8 +159,8 @@ const AccountManagerDashboard = () => {
                 // Render actual data when not loading
                 data.data.map((u) => (
                   <TableRow key={u._id || u.id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell>{u.role}</TableCell>
+                    <TableCell className="font-medium capitalize">{u.name}</TableCell>
+                    <TableCell className="capitalize">{u.role}</TableCell>
                     <TableCell>
                       {u.isActive ? "Active" : "Deactivated"}
                     </TableCell>

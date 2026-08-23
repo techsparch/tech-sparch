@@ -19,7 +19,7 @@ export async function POST(req) {
     const body = await req.json();
 
     // 4. Extract and validate required fields
-    const { title, description, priority } = body;
+    const { title, description } = body;
     if (!title) {
       return NextResponse.json(
         { error: "Missing required field: title is mandatory." },
@@ -30,8 +30,7 @@ export async function POST(req) {
     const taskOption = {
       title,
       description,
-      status: "open", // always created as open, client can't override
-      priority,
+      status: "open", 
       assignedCaId: verifySession.user.id,
       createdBy: verifySession.user.id,
     };

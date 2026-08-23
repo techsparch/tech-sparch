@@ -44,26 +44,21 @@ export default function CreateTaskPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  // Stores the ID of the task currently being deleted
   const [deletingId, setDeletingId] = useState(null);
-
-  // State to hold and display tasks in the table
   const [recentTasks, setRecentTasks] = useState([]);
 
-  // Fetch recent tasks when the page loads
   useEffect(() => {
     const fetchRecentTasks = async () => {
       try {
         const res = await fetch("/api/account-manager/task/check");
         if (res.ok) {
           const data = await res.json();
-          // Map the database fields to match what the table expects
           const formattedTasks = data.tasks.map((t) => ({
             id: t._id,
             title: t.title,
-            priority: t.priority,
             dueDate: t.dueDate,
-            status: t.status || "Open", // Fallback to Open if status isn't set yet
+            status: t.status || "Open",
+            description: t.description,
           }));
           setRecentTasks(formattedTasks);
         }
@@ -75,10 +70,10 @@ export default function CreateTaskPage() {
     fetchRecentTasks();
   }, []);
 
-  const handleDelete = async (taskId) => {
-    // We removed window.confirm because the Shadcn dialog handles the confirmation now
-    setDeletingId(taskId);
+  console.log(recentTasks);
 
+  const handleDelete = async (taskId) => {
+    setDeletingId(taskId);
     try {
       const response = await fetch(
         `/api/account-manager/task/delete/${taskId}`,
@@ -100,12 +95,13 @@ export default function CreateTaskPage() {
       setDeletingId(null);
     }
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
@@ -135,14 +131,12 @@ const handleSubmit = async (e) => {
 
       toast.success("Task added");
 
-      // Add the new task to the table immediately for user feedback
       setRecentTasks((prev) => [
         {
-          // ⚠️ FIX: Use _id from MongoDB. Check both data._id and data.task._id 
-          // just in case your API nests the response object.
-          id: data._id || data.task?._id || data.id, 
+          id: data._id || data.task?._id || data.id,
           title: form.title,
           priority: form.priority,
+          description: form.description, 
           dueDate: form.dueDate,
           status: "Open",
         },
@@ -156,6 +150,7 @@ const handleSubmit = async (e) => {
       setSubmitting(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-6 md:p-12 font-sans text-dark">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -179,134 +174,69 @@ const handleSubmit = async (e) => {
 
         <Separator className="bg-zinc-200" />
 
+        {/* Task Form */}
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="bg-white p-6 md:p-8 rounded-xl border border-zinc-200 shadow-sm space-y-6"
         >
-          {/* Left Column: Core Task Details */}
-          <div className="md:col-span-2 space-y-8 bg-white p-6 md:p-8 rounded-xl border border-zinc-200 shadow-sm">
-            <div>
-              <h2 className="text-lg font-medium mb-6">Task Essentials</h2>
-
-              <div className="space-y-6">
-                {/* Title */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="title"
-                    className="flex items-center text-zinc-700 font-medium"
-                  >
-                    <Type className="w-4 h-4 mr-2 text-zinc-400" />
-                    Task Title <span className="text-red-500 ml-1">*</span>
-                  </Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    value={form.title}
-                    onChange={handleChange}
-                    placeholder="e.g. Audit preparation for Q3"
-                    className="bg-zinc-50 focus-visible:ring-zinc-500 border-zinc-200 h-11"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="description"
-                    className="flex items-center text-zinc-700 font-medium"
-                  >
-                    <AlignLeft className="w-4 h-4 mr-2 text-zinc-400" />
-                    Detailed Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    rows={6}
-                    value={form.description}
-                    onChange={handleChange}
-                    placeholder="Provide any context, client details, or prerequisites..."
-                    className="bg-zinc-50 focus-visible:ring-zinc-500 border-zinc-200 resize-none"
-                  />
-                </div>
-              </div>
-            </div>
+          {/* Title */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="title"
+              className="flex items-center text-zinc-700 font-medium"
+            >
+              <Type className="w-4 h-4 mr-2 text-zinc-400" />
+              Task Title <span className="text-red-500 ml-1">*</span>
+            </Label>
+            <Input
+              id="title"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="e.g. Audit preparation for Q3"
+              className="bg-zinc-50 focus-visible:ring-zinc-500 border-zinc-200 h-11"
+            />
           </div>
 
-          {/* Right Column: Configuration & Submit */}
-          <div className="space-y-8">
-            <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm space-y-6">
-              <h2 className="text-lg font-medium">Configuration</h2>
+          {/* Description */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="description"
+              className="flex items-center text-zinc-700 font-medium"
+            >
+              <AlignLeft className="w-4 h-4 mr-2 text-zinc-400" />
+              Detailed Description
+            </Label>
+            <Textarea
+              id="description"
+              name="description"
+              rows={4}
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Provide any context, client details, or prerequisites..."
+              className="bg-zinc-50 focus-visible:ring-zinc-500 border-zinc-200 resize-none"
+            />
+          </div>
 
-              {/* Priority */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="priority"
-                  className="flex items-center text-zinc-700 font-medium"
-                >
-                  <Flag className="w-4 h-4 mr-2 text-zinc-400" />
-                  Priority Level
-                </Label>
-                <Select
-                  value={form.priority}
-                  onValueChange={(value) =>
-                    setForm((prev) => ({ ...prev, priority: value }))
-                  }
-                >
-                  <SelectTrigger
-                    id="priority"
-                    className="bg-zinc-50 border-zinc-200 h-11"
-                  >
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITIES.map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {p.charAt(0).toUpperCase() + p.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Due Date */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="dueDate"
-                  className="flex items-center text-zinc-700 font-medium"
-                >
-                  <Calendar className="w-4 h-4 mr-2 text-zinc-400" />
-                  Target Due Date
-                </Label>
-                <Input
-                  id="dueDate"
-                  name="dueDate"
-                  type="date"
-                  value={form.dueDate}
-                  onChange={handleChange}
-                  className="bg-zinc-50 focus-visible:ring-zinc-500 border-zinc-200 h-11 block w-full text-zinc-900"
-                />
-              </div>
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 font-medium">
+              {error}
             </div>
+          )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 font-medium">
-                {error}
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="pt-2">
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full h-12 text-base bg-dark text-white shadow-md"
-              >
-                {submitting ? "Deploying Task..." : "Create & Deploy Task"}
-              </Button>
-              <p className="text-xs text-center text-zinc-400 mt-4 capitalize">
-                Task will immediately be visible on the open board.
-              </p>
-            </div>
+          {/* Submit Button */}
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 text-base bg-dark text-white shadow-md hover:bg-zinc-800 transition-colors"
+            >
+              {submitting ? "Deploying Task..." : "Create & Deploy Task"}
+            </Button>
+            <p className="text-xs text-center text-zinc-400 mt-3 capitalize">
+              Task will immediately be visible on the open board.
+            </p>
           </div>
         </form>
 
@@ -320,11 +250,10 @@ const handleSubmit = async (e) => {
               <table className="w-full text-left text-sm text-zinc-600">
                 <thead className="border-b border-zinc-200 bg-zinc-50/50 text-zinc-900">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Task Title</th>
-                    <th className="px-6 py-4 font-medium">Priority</th>
-                    <th className="px-6 py-4 font-medium">Due Date</th>
+                    <th className="px-6 py-4 font-medium">Task</th>
+                    <th className="px-6 py-4 font-medium">Description</th>
+                    {/* <th className="px-6 py-4 font-medium">Due Date</th> */}
                     <th className="px-6 py-4 font-medium">Status</th>
-                    {/* 1. Added an Actions column */}
                     <th className="px-6 py-4 font-medium text-right">
                       Actions
                     </th>
@@ -333,9 +262,8 @@ const handleSubmit = async (e) => {
                 <tbody className="divide-y divide-zinc-100">
                   {recentTasks.length === 0 ? (
                     <tr>
-                      {/* 2. Updated colSpan from 4 to 5 to match the new column count */}
                       <td
-                        colSpan={30}
+                        colSpan={5}
                         className="px-6 py-8 text-center text-zinc-500"
                       >
                         No tasks deployed yet. Created tasks will appear here.
@@ -350,7 +278,7 @@ const handleSubmit = async (e) => {
                         <td className="px-6 py-4 font-medium text-zinc-900 capitalize">
                           {task.title}
                         </td>
-                        <td className="px-6 py-4 capitalize">
+                        {/* <td className="px-6 py-4 capitalize">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                               task.priority === "high"
@@ -362,21 +290,22 @@ const handleSubmit = async (e) => {
                           >
                             {task.priority}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-zinc-500">
-                          {task.dueDate
-                            ? new Date(task.dueDate).toLocaleDateString()
-                            : "No date set"}
+                        </td> */}
+                        <td className="px-6 py-4 text-zinc-500 max-w-xs">
+                          <p
+                            className="line-clamp-2 break-words"
+                            title={task?.description || ""}
+                          >
+                            {task?.description || "—"}
+                          </p>
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
                             {task.status}
                           </span>
                         </td>
-                        {/* 3. Added the Delete Button cell */}
                         <td className="px-6 py-4 text-right">
                           <AlertDialog>
-                            {/* asChild allows us to use your existing button styling as the trigger */}
                             <AlertDialogTrigger asChild>
                               <button
                                 disabled={deletingId === task.id}
@@ -432,7 +361,8 @@ const handleSubmit = async (e) => {
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   This will permanently delete the task &quot;
-                                  {task.title}&quot;. This action cannot be undone.
+                                  {task.title}&quot;. This action cannot be
+                                  undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

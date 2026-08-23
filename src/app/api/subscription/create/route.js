@@ -38,6 +38,8 @@ export async function POST(request) {
     // Find User (using .lean() for faster read performance)
     const user = await UserModel.findById(currentUser).lean();
 
+
+
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -86,6 +88,8 @@ export async function POST(request) {
     };
 
     const selectedConfig = PLAN_CONFIG[planType];
+    console.log(selectedConfig ,"selectedConfig" )
+
 
     if (!selectedConfig.id) {
       return NextResponse.json(
@@ -94,8 +98,11 @@ export async function POST(request) {
       );
     }
 
+
     // Fetch Razorpay Plan
     const plan = await razorpay.plans.fetch(selectedConfig.id);
+
+    console.log(plan , "plan id")
 
     // Create Razorpay Subscription
     const razorpaySubscription = await razorpay.subscriptions.create({

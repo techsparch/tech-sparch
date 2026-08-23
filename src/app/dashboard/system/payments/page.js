@@ -106,7 +106,7 @@ export default function PaymentsDashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Payments Dashboard
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1 capitalize">
             Paid invoices from the last 5 months, grouped by client.
           </p>
         </div>

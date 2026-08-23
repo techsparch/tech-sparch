@@ -39,6 +39,8 @@ export default function SystemDashboardPage() {
   const [roleCounts, setRoleCounts] = useState([]);
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeUser, setIsActiveUser] = useState(0);
+
 
   // Added loading state
 
@@ -61,6 +63,7 @@ export default function SystemDashboardPage() {
       setUsers(data.data); // latest users
       setTotalUsers(data.totalUsers);
       setRoleCounts(data.roleCounts);
+      setIsActiveUser(data.activeClients)
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -101,7 +104,7 @@ export default function SystemDashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight text-dark">
           System Dashboard
         </h1>
-        <p className="text-sm text-dark">
+        <p className="text-sm text-dark capitalize">
           Manage CA firm accounts, roles and access control
         </p>
       </div>
@@ -131,7 +134,7 @@ export default function SystemDashboardPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16 mt-1" />
               ) : (
-                <p className="text-2xl font-bold">{totalUsers}</p>
+                <p className="text-2xl font-bold">{activeUser}</p>
               )}
             </div>
             <ShieldCheck className="h-6 w-6 text-green-600" />
@@ -220,7 +223,7 @@ export default function SystemDashboardPage() {
                 // Render actual data when not loading
                 users.map((u) => (
                   <TableRow key={u._id || u.id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
+                    <TableCell className="font-medium capitalize">{u.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{u.role}</Badge>
                     </TableCell>

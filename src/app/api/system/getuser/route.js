@@ -17,13 +17,17 @@ export async function GET(request) {
       );
     }
 
-    const [users, totalUsers, roleCounts] = await Promise.all([
+    const [users, totalUsers, roleCounts , activeClients] = await Promise.all([
       UserModel.find()
         .select("-password -__v")
         .sort({ createdAt: -1 })
         .limit(9),
       UserModel.countDocuments(),
       UserModel.aggregate([{ $group: { _id: "$role", count: { $sum: 1 } } }]),
+      UserModel.countDocuments({
+        role: "client",
+        isActive: true,
+      }),
     ]);
 
     if (!users || users.length === 0) {
@@ -37,6 +41,7 @@ export async function GET(request) {
         data: users,
         totalUsers,
         roleCounts,
+        activeClients
       },
       { status: 200 },
     );
