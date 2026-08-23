@@ -66,6 +66,7 @@ export default function MakePaymentPage() {
         throw new Error(createData.message || "Failed to create subscription");
       }
 
+      
       // 3. Initialize Razorpay Checkout
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
