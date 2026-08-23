@@ -24,25 +24,37 @@ export async function POST(request) {
     if (!session || !session.user?.id || session.user?.role !== "system") {
       return NextResponse.json(
         { message: "Not authenticated or unauthorized", success: false },
-        { status: 401 }, 
+        { status: 401 },
       );
     }
 
     // 3. Single, optimized database query
-    const user = await UserModel.findById(clientId).select("accessCode").lean();
+    const user = await UserModel.findById(clientId)
+      .select("accessCode isActive")
+      .lean();
 
     if (!user) {
-       return NextResponse.json(
-         { message: "User not found", success: false }, 
-         { status: 404 }
-       ); 
+      return NextResponse.json(
+        { message: "User not found", success: false },
+        { status: 404 },
+      );
     }
 
-   return NextResponse.json({
-     success: true,
-     accessCode: user.accessCode
-   });
+    if (user.isActive === false) {
+      return NextResponse.json(
+        {
+          message: "Account De-Activated ",
+          deActivationStatus: 100,
+          categories: [],
+        },
+        { status: 200 }, // 403 Forbidden is usually better for deactivated accounts
+      );
+    }
 
+    return NextResponse.json({
+      success: true,
+      accessCode: user.accessCode,
+    });
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(

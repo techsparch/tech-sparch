@@ -66,7 +66,7 @@ export async function POST(req) {
 
     // Basic validation
     if (!mobile || !password) {
-      return NextResponse.json(
+      return NextResponse.json( 
         { error: "All required fields must be filled" },
         { status: 400 }
       );

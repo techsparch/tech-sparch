@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar items={items} onSignOut={handleSignOut} userName={session?.user?.name} role={session?.user?.role} />
+        <AppSidebar items={items} onSignOut={handleSignOut} userName={session?.user?.name} role={session?.user?.role} shopName={session?.user?.shopName} />
 
         <SidebarInset>
           <main className="p-6 mt-12 md:mt-1 lg:mt1 xl:mt1">{children}</main>

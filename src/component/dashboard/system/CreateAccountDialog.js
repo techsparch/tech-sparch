@@ -36,14 +36,14 @@ const roleIcons = {
   client: User,
 };
 
-
-export default function CreateAccountDialog({ open, setOpen, onSuccess , roles}) {
+export default function CreateAccountDialog({ open, setOpen, onSuccess, roles }) {
   const [form, setForm] = useState({
     name: "",
     mobile: "",
     email: "",
     password: "",
     role: "",
+    businessName: "", // ✅ Initialized correctly
   });
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +55,8 @@ export default function CreateAccountDialog({ open, setOpen, onSuccess , roles})
   };
 
   const handleClose = () => {
-    setForm({ name: "", mobile: "", email: "", password: "", role: "" });
+    // ✅ Added businessName to reset state
+    setForm({ name: "", mobile: "", email: "", password: "", role: "", businessName: "" });
     setOpen(false);
   };
 
@@ -65,6 +66,7 @@ export default function CreateAccountDialog({ open, setOpen, onSuccess , roles})
     !form.mobile.trim() ||
     !form.email.trim() ||
     !form.password.trim() ||
+    !form.businessName.trim() || 
     !form.role ||
     loading;
 
@@ -111,7 +113,7 @@ export default function CreateAccountDialog({ open, setOpen, onSuccess , roles})
       open={open}
       onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}
     >
-      <DialogContent className="sm:max-w-md rounded-2xl p-6 bg-white shadow-2xl border border-slate-100">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white shadow-2xl border border-slate-100">
         {/* HEADER */}
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
@@ -134,6 +136,18 @@ export default function CreateAccountDialog({ open, setOpen, onSuccess , roles})
               name="name"
               placeholder="Enter full name"
               value={form.name}
+              onChange={handleChange}
+              className="h-11 rounded-xl"
+            />
+          </div>
+
+          {/* BUSINESS NAME ✅ ADDED */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Business Name</Label>
+            <Input
+              name="businessName"
+              placeholder="Enter business name"
+              value={form.businessName}
               onChange={handleChange}
               className="h-11 rounded-xl"
             />

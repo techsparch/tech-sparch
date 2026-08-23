@@ -59,6 +59,7 @@ export const authOptions = {
           role: user.role,
           serviceEnabled,
           mustChangePassword: user.mustChangePassword,
+          shopName: user.shopName || "tech Sparch", // Passed from DB
         };
       },
     }),
@@ -110,7 +111,8 @@ export const authOptions = {
           mobile: user.mobile,
           role: user.role,
           serviceEnabled,
-          mustChangePassword: user.mustChangePassword, // Added this here for consistency
+          mustChangePassword: user.mustChangePassword, 
+          shopName: user.shopName || "tech sparch", 
         };
       },
     }),
@@ -124,7 +126,8 @@ export const authOptions = {
         token.mobile = user.mobile;
         token.role = user.role;
         token.serviceEnabled = user.serviceEnabled;
-        token.mustChangePassword = user.mustChangePassword; // FIXED: Added to token
+        token.mustChangePassword = user.mustChangePassword;
+        token.shopName = user.shopName; // ✅ ADDED: save to token
       }
 
       // 2. Client-side update
@@ -142,7 +145,8 @@ export const authOptions = {
         session.user.mobile = token.mobile;
         session.user.role = token.role;
         session.user.serviceEnabled = token.serviceEnabled;
-        session.user.mustChangePassword = token.mustChangePassword; // FIXED: Map FROM token TO session
+        session.user.mustChangePassword = token.mustChangePassword; 
+        session.user.shopName = token.shopName; 
       }
       return session;
     },
@@ -150,7 +154,7 @@ export const authOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 48 * 60 * 60, // 24 hours
+    maxAge: 48 * 60 * 60, // 48 hours (Note: Your comment says 24 hours but the math is 48)
   },
 
   pages: {

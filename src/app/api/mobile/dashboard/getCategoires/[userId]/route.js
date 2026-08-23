@@ -50,7 +50,8 @@ export async function GET(request, { params }) {
     if (!dbUser || dbUser.isActive === false) {
       return NextResponse.json(
         {
-          message: "Your account is currently inactive. Please contact support.",
+          message:
+            "Your account is currently inactive. Please contact support.",
           categories: [],
         },
         { status: 200 },
@@ -89,4 +90,3 @@ export async function GET(request, { params }) {
     );
   }
 }
-

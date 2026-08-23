@@ -23,6 +23,8 @@ export default function DashboardLayout({ children }) {
 
   const { data: session, status } = useSession();
 
+
+
   useEffect(() => {
     if (status === "loading") return;
 
@@ -73,6 +75,8 @@ export default function DashboardLayout({ children }) {
     return null;
   }
 
+  console.log(session?.user?.shopName)
+
   // If we reach here, the user is safely authenticated
   return (
     <TooltipProvider>
@@ -82,6 +86,7 @@ export default function DashboardLayout({ children }) {
           onSignOut={handleSignOut}
           userName={session?.user?.name}
           role={session?.user?.role}
+          shopName={session?.user?.shopName}
         />
 
         <SidebarInset>

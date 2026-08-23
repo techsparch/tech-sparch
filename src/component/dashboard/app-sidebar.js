@@ -35,6 +35,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 function MobileNav({
   open,
@@ -55,17 +56,30 @@ function MobileNav({
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
       />
 
-      {/* DRAWER */}
-      <div className="fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-slate-200 shadow-2xl flex flex-col md:hidden">
+      <div className="fixed top-0 left-0 bottom-0 z-1000 w-64 bg-white border-r border-slate-200 shadow-2xl flex flex-col md:hidden">
         {/* drawer header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <span className="text-lg font-bold text-slate-900">tech Sparch</span>
-          <button
+          <div className="flex items-center gap-3 rounded-full bg-light p-1 text-dark">
+            <Image
+              src="/logo.jpeg"
+              alt="Tech Sparch Logo"
+              width={48}
+              height={48}
+              className="rounded-full object-cover"
+            />
+            <div>
+              <h1 className="text-md font-bold">Tech Sparch</h1>
+              <p className="text-xs font-semibold text-taupe-900/50 opacity-80">
+                SAKSHAM SOLUTIONS
+              </p>
+            </div>
+          </div>{" "}
+          {/* <button
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 text-lg leading-none"
           >
             ✕
-          </button>
+          </button> */}
         </div>
 
         {/* drawer menu */}
@@ -142,19 +156,24 @@ function ProfileCard({ isCollapsed, onClick, userName, role }) {
   );
 }
 
-export function AppSidebar({ items = [], onSignOut, userName, role }) {
+export function AppSidebar({
+  items = [],
+  onSignOut,
+  userName,
+  role,
+  shopName,
+}) {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-
   return (
     <>
       {/* ── MOBILE TOP BAR ───────────────────────────────────── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shadow-sm">
-        <span className="font-bold text-slate-900 text-base">Tech Sparch</span>
+        {" "}
         <button
           onClick={() => setMobileOpen(true)}
           className="p-2 rounded-md hover:bg-slate-100 transition-colors"
@@ -163,7 +182,6 @@ export function AppSidebar({ items = [], onSignOut, userName, role }) {
         </button>
       </div>
 
-      {/* SPACER — pushes page content below fixed top bar */}
       <div className="md:hidden h-[52px]" />
 
       <MobileNav
@@ -182,10 +200,35 @@ export function AppSidebar({ items = [], onSignOut, userName, role }) {
           collapsible="icon"
           className="bg-white border-r shadow-xl shadow-slate-200/60"
         >
-          <SidebarHeader className="px-5 py-5">
+          <SidebarHeader className="px-2 py-5">
             {!isCollapsed && (
-              <div className="text-xl font-bold text-slate-900">
-                <h1 className="font-bold text-2xl">Tech Sparch</h1>
+              <div className="flex items-center gap-3 rounded-full bg-light p-4 text-dark">
+                <Image
+                  src="/logo.jpeg"
+                  alt="Tech Sparch Logo"
+                  width={48}
+                  height={48}
+                  className="rounded-full object-cover"
+                />
+                {/* The parent container needs min-w-0 or overflow-hidden if it's inside a flex row */}
+                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                  <h1
+                    className="text-md font-bold truncate w-full capitalize"
+                    title={shopName}
+                  >
+                    {shopName}
+                  </h1>
+
+                  {role !== "system" ? (
+                    <p className="text-[7px] font-semibold text-taupe-900/50 opacity-80 uppercase tracking-wider ">
+                      POWERED BY TECH SPARCH
+                    </p>
+                  ) : (
+                    <p className="text-[9px] text-taupe-700 tracking-wide">
+                      SAKSHAM SOLUTIONS
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </SidebarHeader>

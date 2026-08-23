@@ -38,7 +38,8 @@ export async function POST(req) {
     }
 
     // 2. Parse and validate input BEFORE hitting the database
-    const { name, mobile, password, email, role } = await req.json();
+    const { name, mobile, password, email, role, businessName } =
+      await req.json();
 
     if (!mobile || !password) {
       return NextResponse.json(
@@ -82,6 +83,7 @@ export async function POST(req) {
       role,
       assignedCaId: verifySession.user.id,
       accessCode,
+      shopName: businessName,
     });
 
     // 7. Return 201 Created status code

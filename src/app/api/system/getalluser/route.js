@@ -25,7 +25,7 @@ export async function GET(request) {
     const skip = (page - 1) * limit;
 
     // 1. Store the filter in a variable so it perfectly matches both queries
-    const queryFilter = { role: "client" };
+    const queryFilter = { role: "client" ,  };
 
     const [users, totalUsers] = await Promise.all([
       UserModel.find(queryFilter)

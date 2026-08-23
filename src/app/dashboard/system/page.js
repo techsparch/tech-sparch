@@ -65,11 +65,10 @@ export default function SystemDashboardPage() {
       console.error(error);
       toast.error("Something went wrong");
     } finally {
-      setIsLoading(false); // Stop loading regardless of success/error
+      setIsLoading(false); 
     }
   };
-
-  const roles = ["system", "ca", "staff", "client"];
+  const roles = ["ca", "client"];
 
   const handleAccountCreated = () => {
     // Refresh the dashboard's own data
@@ -91,7 +90,7 @@ export default function SystemDashboardPage() {
   const pushManagerTab = () => {
     router.push("/dashboard/system/account-manager");
   };
-    const pushClientTab = () => {
+  const pushClientTab = () => {
     router.push("/dashboard/system/clients");
   };
 
@@ -125,7 +124,7 @@ export default function SystemDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card onClick={pushClientTab}> 
+        <Card onClick={pushClientTab}>
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-md text-dark tracking-tight">Active Users</p>

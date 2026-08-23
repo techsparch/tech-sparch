@@ -11,6 +11,7 @@ import { AppSidebar } from "@/component/dashboard/app-sidebar";
 
 import {
   CheckSquare,
+  CreditCard,
   FileText,
   LayoutDashboard,
   Settings,
@@ -44,21 +45,30 @@ export default function DashboardLayout({ children }) {
   const items = [
     { title: "Dashboard", url: "/dashboard/system", icon: LayoutDashboard },
     { title: "Clients", url: "/dashboard/system/clients", icon: Users },
-    { title: "Account Manager", url: "/dashboard/system/account-manager", icon: UserLock },
+    {
+      title: "Account Manager",
+      url: "/dashboard/system/account-manager",
+      icon: UserLock,
+    },
 
     { title: "Usages", url: "/dashboard/system/usage", icon: FileText },
+    { title: "Payments", url: "/dashboard/system/payments", icon: CreditCard },
   ];
 
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/login" });
+  };
 
-    const handleSignOut = () => {
-      signOut({ callbackUrl: "/login" });
-    };
-  
-  
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar items={items} onSignOut={handleSignOut} userName={session?.user?.name} role={session?.user?.role}/>
+        <AppSidebar
+          items={items}
+          onSignOut={handleSignOut}
+          userName={session?.user?.name}
+          role={session?.user?.role}
+          shopName={session?.user?.shopName}
+        />
 
         <SidebarInset>
           <main className="p-6 mt-12 md:mt-1 lg:mt1 xl:mt1">{children}</main>
