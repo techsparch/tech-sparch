@@ -13,23 +13,29 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function MakePaymentPage() {
-  // Use a string to track which plan is loading ("monthly" or "yearly")
   const [loadingPlan, setLoadingPlan] = useState(null);
   const { update } = useSession();
   const router = useRouter();
 
-  // Dynamically load the Razorpay SDK script
   const loadRazorpayScript = () => {
+    console.log("[Razorpay] Loading Razorpay script...");
     return new Promise((resolve) => {
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
+      script.onload = () => {
+        console.log("[Razorpay] Script loaded successfully.");
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error("[Razorpay] Failed to load script.");
+        resolve(false);
+      };
       document.body.appendChild(script);
     });
   };
 
   const handlePayment = async (planType) => {
+    console.log(`\n--- [handlePayment] Initiated for plan: ${planType} ---`);
     setLoadingPlan(planType);
 
     try {
@@ -39,7 +45,8 @@ export default function MakePaymentPage() {
         throw new Error("Razorpay SDK failed to load. Are you online?");
       }
 
-      // 2. Create the subscription on your backend, passing the planType
+      // 2. Create the subscription on your backend
+      console.log(`[API Call] Creating subscription for: ${planType}`);
       const createRes = await fetch("/api/subscription/create", {
         method: "POST",
         headers: {
@@ -47,7 +54,13 @@ export default function MakePaymentPage() {
         },
         body: JSON.stringify({ planType }),
       });
+      
       const createData = await createRes.json();
+      console.log("[API Response] Create Subscription:", {
+        status: createRes.status,
+        ok: createRes.ok,
+        data: createData,
+      });
 
       if (!createRes.ok) {
         throw new Error(createData.message || "Failed to create subscription");
@@ -56,23 +69,34 @@ export default function MakePaymentPage() {
       // 3. Initialize Razorpay Checkout
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        subscription_id: createData.subscriptionId, // From your create API
+        subscription_id: createData.subscriptionId,
         name: "SP Consultancy",
         description: `${planType === "monthly" ? "Monthly" : "Yearly"} Service Subscription`,
         handler: async function (response) {
+          console.log("\n--- [Razorpay Handler] Payment Authorized ---");
+          console.log("[Razorpay Handler] Response received:", response);
+          
           try {
             // 4. Verify payment signature on your backend
+            const verificationPayload = {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_signature: response.razorpay_signature,
+            };
+            console.log("[API Call] Verifying payment with payload:", verificationPayload);
+
             const verifyRes = await fetch("/api/subscription/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_subscription_id: response.razorpay_subscription_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
+              body: JSON.stringify(verificationPayload),
             });
 
             const verifyData = await verifyRes.json();
+            console.log("[API Response] Verify Subscription:", {
+              status: verifyRes.status,
+              ok: verifyRes.ok,
+              data: verifyData,
+            });
 
             if (!verifyRes.ok) {
               throw new Error(verifyData.message || "Verification failed");
@@ -80,29 +104,45 @@ export default function MakePaymentPage() {
 
             toast.success("Payment successful! Redirecting...");
 
-            // 5. Update NextAuth session immediately so layout lets them in
+            // 5. Update NextAuth session
+            console.log("[NextAuth] Updating session (serviceEnabled: true)...");
             await update({ serviceEnabled: true });
+            
+            console.log("[Router] Redirecting to /dashboard/client...");
             router.push("/dashboard/client");
             router.refresh();
           } catch (err) {
+            console.error("[Razorpay Handler] Error during verification or session update:", err);
             toast.error(err.message || "Payment verification failed");
           }
         },
         theme: {
-          color: "#2563eb", // Matches your blue-600 button
+          color: "#2563eb",
         },
       };
+
+      console.log("[Razorpay] Initializing with options:", {
+        ...options,
+        key: options.key ? "SET (Hidden for security)" : "MISSING", // Mask key in logs
+      });
 
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", function (response) {
+        console.error("\n--- [Razorpay Event] Payment Failed ---");
+        console.error("[Razorpay Event] Error details:", response.error);
         toast.error(response.error.description || "Payment failed");
       });
 
+      console.log("[Razorpay] Opening checkout modal...");
       rzp.open();
+
     } catch (error) {
+      console.error("\n--- [handlePayment] Error Caught ---");
+      console.error("[handlePayment] Details:", error);
       toast.error(error.message || "Something went wrong");
     } finally {
+      console.log(`[handlePayment] Process finished. Resetting loading state.`);
       setLoadingPlan(null);
     }
   };
@@ -159,7 +199,10 @@ export default function MakePaymentPage() {
               </div>
 
               <button
-                onClick={() => handlePayment("monthly")}
+                onClick={() => {
+                  console.log("User clicked 'Pay Monthly'");
+                  handlePayment("monthly");
+                }}
                 disabled={loadingPlan !== null}
                 className="w-full flex items-center justify-center bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
@@ -214,7 +257,10 @@ export default function MakePaymentPage() {
               </div>
 
               <button
-                onClick={() => handlePayment("yearly")}
+                onClick={() => {
+                  console.log("User clicked 'Pay Yearly'");
+                  handlePayment("yearly");
+                }}
                 disabled={loadingPlan !== null}
                 className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
@@ -235,7 +281,10 @@ export default function MakePaymentPage() {
           {/* Action Buttons */}
           <div className="flex justify-center border-t border-gray-200 pt-6">
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => {
+                console.log("User clicked 'Sign Out'");
+                signOut({ callbackUrl: "/login" });
+              }}
               className="flex items-center justify-center bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors"
             >
               <LogOut className="w-4 h-4 mr-2" />
