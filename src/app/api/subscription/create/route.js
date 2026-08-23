@@ -154,6 +154,8 @@ export async function POST(request) {
       });
     }
 
+    console.log(razorpaySubscription.id)
+
     return NextResponse.json({
       success: true,
       key: process.env.RAZORPAY_KEY_ID,
