@@ -417,5 +417,3 @@ function BulletList({ items }) {
     </ul>
   );
 }
-
-

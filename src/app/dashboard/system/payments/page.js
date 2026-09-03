@@ -1,4 +1,3 @@
-// app/dashboard/payments/page.jsx
 "use client";
 
 import { useEffect, useState, useCallback, Fragment } from "react";
@@ -13,7 +12,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, ChevronLeft, AlertCircle, Receipt, ExternalLink } from "lucide-react";
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  AlertCircle, 
+  Receipt, 
+  ExternalLink,
+  FileText,
+  FileSpreadsheet,
+  Loader2
+} from "lucide-react";
 
 // ---- Helpers ----
 const formatCurrency = (amount, currency = "INR") =>
@@ -50,6 +58,9 @@ export default function PaymentsDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
+  
+  // New state for download buttons
+  const [downloadingType, setDownloadingType] = useState(null); // 'pdf' | 'excel' | null
 
   const fetchPayments = useCallback(async (page = 1) => {
     setLoading(true);
@@ -65,7 +76,6 @@ export default function PaymentsDashboardPage() {
       setData(json.data);
       setPagination(json.pagination);
       
-      // Automatically open the first row when data loads
       if (json.data && json.data.length > 0) {
         setExpandedRows(new Set([json.data[0].userId]));
       } else {
@@ -98,6 +108,40 @@ export default function PaymentsDashboardPage() {
     fetchPayments(page);
   };
 
+  // ---- Download Handler ----
+  const downloadReport = async (type) => {
+    setDownloadingType(type);
+    try {
+      // UPDATE THIS PATH to match your actual backend route location
+      const res = await fetch("/api/system/client-payment-file", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      });
+      
+      const json = await res.json();
+      
+      if (!res.ok || !json.file?.secureUrl) {
+        throw new Error(json.error || "Failed to generate report");
+      }
+
+      // Create an invisible link to trigger the download/open new tab
+      const link = document.createElement("a");
+      link.href = json.file.secureUrl;
+      link.target = "_blank"; // Cloudinary files often require _blank for cross-origin downloads
+      link.download = `payment_report.${type === "excel" ? "xlsx" : "pdf"}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error("Download error:", err);
+      alert(err.message || "An error occurred while downloading the report.");
+    } finally {
+      setDownloadingType(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -110,9 +154,43 @@ export default function PaymentsDashboardPage() {
             Paid invoices from the last 5 months, grouped by client.
           </p>
         </div>
-        <Badge variant="secondary" className="px-3 py-1 text-sm font-medium">
-          {pagination.totalDocuments} client{pagination.totalDocuments === 1 ? "" : "s"}
-        </Badge>
+        
+        {/* Top Right Action Buttons */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="secondary" className="px-3 py-1 text-sm font-medium h-9">
+            {pagination.totalDocuments} client{pagination.totalDocuments === 1 ? "" : "s"}
+          </Badge>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9"
+            onClick={() => downloadReport("pdf")}
+            disabled={downloadingType !== null}
+          >
+            {downloadingType === "pdf" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4 mr-2 text-red-500" />
+            )}
+            PDF Report
+          </Button>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9"
+            onClick={() => downloadReport("excel")}
+            disabled={downloadingType !== null}
+          >
+            {downloadingType === "excel" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+            )}
+            Excel Report
+          </Button>
+        </div>
       </div>
 
       {/* Main Table */}
@@ -258,7 +336,6 @@ export default function PaymentsDashboardPage() {
                                         {formatCurrency(inv.amount, inv.currency)}
                                       </TableCell>
                                       <TableCell className="text-center">
-                                        {/* ✅ NEW: PDF link integration */}
                                         {inv.pdfUrl ? (
                                           <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
                                             <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" title="View PDF">

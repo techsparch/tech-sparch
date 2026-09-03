@@ -24,6 +24,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {  Play, Square } from "lucide-react"; // Assuming you use lucide-react
+
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -664,10 +666,10 @@ const ShowAllUser = ({
                 <div className="mt-3 pt-3 border-t border-slate-100">
                   <Button
                     variant="outline"
-                    className={`w-full h-9 text-xs font-medium transition-colors ${
+                    className={`w-full h-9 text-xs font-medium transition-colors bg-white ${
                       user.isActive
-                        ? "bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
-                        : "bg-green-50 text-green-600 hover:bg-green-100 border-green-200"
+                        ? "text-red-600 hover:bg-red-50 border-gray-200 hover:border-red-200"
+                        : "text-green-600 hover:bg-green-50 border-gray-200 hover:border-green-200"
                     }`}
                     onClick={(e) => handleInitiateToggle(e, user)}
                     disabled={isTogglingActive[user._id]}
@@ -678,9 +680,15 @@ const ShowAllUser = ({
                         Updating...
                       </>
                     ) : user.isActive ? (
-                      "Deactivate Account"
+                      <>
+                        <Square className="h-3.5 w-3.5 mr-2 fill-current" />
+                        Stop Services
+                      </>
                     ) : (
-                      "Activate Account"
+                      <>
+                        <Play className="h-3.5 w-3.5 mr-2 fill-current" />
+                        Start Services
+                      </>
                     )}
                   </Button>
                 </div>
